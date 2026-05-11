@@ -1,0 +1,14 @@
+node_modules
+src
+public
+.storybook
+storybook-static
+.vscode
+.idea
+.claude
+.github
+*.log
+.DS_Store
+.gitignore
+vite.config.js
+index.html

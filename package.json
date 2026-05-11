@@ -1,0 +1,84 @@
+{
+  "name": "nemesischart",
+  "version": "2.0.0",
+  "private": false,
+  "description": "Lib de componentes Vue 3 para charts usando Chart.js, PrimeVue e PrimeFlex",
+  "type": "module",
+  "main": "./dist/nemesischart.umd.cjs",
+  "module": "./dist/nemesischart.js",
+  "exports": {
+    ".": {
+      "import": "./dist/nemesischart.js",
+      "require": "./dist/nemesischart.umd.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "keywords": [
+    "vue",
+    "vue3",
+    "chart",
+    "charts",
+    "chartjs",
+    "chart.js",
+    "primevue",
+    "primeflex",
+    "dashboard",
+    "card",
+    "components",
+    "ui",
+    "nemesischart"
+  ],
+  "author": "Neemias Renan <neemiasrenan2015@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/nemesiskit/nemesischart#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nemesiskit/nemesischart.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nemesiskit/nemesischart/issues"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --mode lib",
+    "build:lib": "vite build --mode lib",
+    "build:app": "vite build",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "prepublishOnly": "npm run build:lib"
+  },
+  "peerDependencies": {
+    "chart.js": "^4.4.1",
+    "primeflex": "^3.3.1",
+    "primeicons": "^6.0.1",
+    "primevue": "^3.53.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.0.0",
+    "@storybook/addon-interactions": "^8.0.0",
+    "@storybook/addon-links": "^8.0.0",
+    "@storybook/blocks": "^8.0.0",
+    "@storybook/test": "^8.0.0",
+    "@storybook/vue3": "^8.0.0",
+    "@storybook/vue3-vite": "^8.0.0",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "chart.js": "^4.4.1",
+    "primeflex": "^3.3.1",
+    "primeicons": "^6.0.1",
+    "primevue": "^3.53.0",
+    "storybook": "^8.0.0",
+    "vite": "^5.2.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.6.4"
+  }
+}

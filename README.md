@@ -1,0 +1,329 @@
+# NemesisChart
+
+Biblioteca de componentes Vue 3 para construção rápida de cards e dashboards com gráficos, construída sobre [Chart.js](https://www.chartjs.org/), [PrimeVue](https://primevue.org/) e [PrimeFlex](https://primeflex.org/).
+
+Todos os componentes seguem o mesmo padrão: um cartão (`Card*`) que exibe legenda, sublegenda, valor de destaque, descrição e o gráfico correspondente — com suporte a temas claro/escuro, formatação automática de valores e exportação como imagem.
+
+---
+
+## Sumário
+
+- [Instalação](#instalação)
+- [Uso rápido](#uso-rápido)
+- [Estrutura de dados](#estrutura-de-dados)
+- [Componentes](#componentes)
+  - [CardLinhas](#cardlinhas)
+  - [CardBarra](#cardbarra)
+  - [CardPizza](#cardpizza)
+  - [CardPolar](#cardpolar)
+  - [CardProgresso](#cardprogresso)
+  - [CardBase](#cardbase)
+  - [ChartBase](#chartbase)
+- [Props comuns](#props-comuns)
+- [Slots](#slots)
+- [Eventos](#eventos)
+- [Composables internos](#composables-internos)
+- [Playground & Dashboard](#playground--dashboard)
+
+---
+
+## Instalação
+
+```bash
+npm install nemesischart chart.js primevue primeflex primeicons
+```
+
+`vue`, `chart.js`, `primevue` e `primeflex` são peer-deps do bundle de lib.
+
+## Uso rápido
+
+### Como plugin
+
+```js
+import { createApp } from 'vue'
+import PrimeVue from 'primevue/config'
+import NemesisChart from 'nemesischart'
+import 'nemesischart/style.css'
+
+import 'primevue/resources/themes/lara-light-blue/theme.css'
+import 'primeicons/primeicons.css'
+import 'primeflex/primeflex.css'
+
+import App from './App.vue'
+
+createApp(App)
+  .use(PrimeVue)
+  .use(NemesisChart)
+  .mount('#app')
+```
+
+### Importação pontual
+
+```vue
+<script setup>
+import { CardLinhas } from 'nemesischart'
+
+const data = [
+  { rotulo: 'Jan', quantidade: 1200 },
+  { rotulo: 'Fev', quantidade: 2800 },
+  { rotulo: 'Mar', quantidade: 3200 },
+]
+</script>
+
+<template>
+  <CardLinhas
+    legenda="Faturamento"
+    sublegenda="2026"
+    titulo="R$ 7.2k"
+    descricao="acumulado"
+    tipoValor="moeda"
+    :data="data"
+  />
+</template>
+```
+
+---
+
+## Estrutura de dados
+
+Todos os cards recebem uma prop `data` no formato:
+
+```js
+[
+  { rotulo: 'Jan', quantidade: 1200 },
+  { rotulo: 'Fev', quantidade: 2800 },
+]
+```
+
+- `rotulo` (string): o nome exibido no eixo / legenda.
+- `quantidade` (number): o valor.
+
+Variações específicas por componente:
+
+| Componente | Extras |
+|---|---|
+| `CardProgresso` | cada item pode ter `meta` (number), senão usa `metaPadrao`. |
+| `CardLinhas` / `CardBarra` | aceitam `series: [{ nome, data: [...], cor? }]` para múltiplas séries. |
+
+---
+
+## Componentes
+
+### CardLinhas
+
+Gráfico de linhas com gradiente sob a curva.
+
+```vue
+<CardLinhas
+  legenda="Receita"
+  sublegenda="2026"
+  titulo="R$ 11M"
+  descricao="acumulado no ano"
+  tema="light"
+  tipoValor="moeda"
+  corDetalhes="#3B82F6"
+  corDetalhesSecundaria="#8B5CF6"
+  :data="dados"
+/>
+```
+
+Props específicas:
+
+| Prop | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| `corDetalhes` | String | `#3B82F6` | Cor da linha principal. |
+| `corDetalhesSecundaria` | String | — | Segunda cor para gradiente combinado. |
+| `series` | Array | — | Várias linhas. |
+| `direcao` | `top` \| `bottom` \| `left` \| `right` | `top` | Posição do header em relação ao gráfico. |
+
+### CardBarra
+
+Barras verticais ou horizontais, suporta empilhamento e múltiplas séries.
+
+```vue
+<CardBarra
+  legenda="Vendas"
+  titulo="1.160"
+  orientacao="vertical"
+  :empilhado="false"
+  corDetalhes="#10B981"
+  :data="dados"
+/>
+```
+
+Props específicas:
+
+| Prop | Tipo | Padrão |
+|---|---|---|
+| `orientacao` | `vertical` \| `horizontal` | `vertical` |
+| `empilhado` | Boolean | `false` |
+| `series` | Array | — |
+| `cores` | Array&lt;String&gt; | paleta padrão |
+| `mostrarLegendaSeries` | Boolean | `true` |
+
+### CardPizza
+
+Doughnut com tabela lateral opcional.
+
+```vue
+<CardPizza
+  legenda="Dispositivos"
+  titulo="100%"
+  tipoValor="percentual"
+  cutout="70%"
+  :data="dados"
+/>
+```
+
+Props específicas:
+
+| Prop | Tipo | Padrão |
+|---|---|---|
+| `cores` | Array&lt;String&gt; | paleta padrão |
+| `cutout` | String/Number | `'70%'` |
+| `direcao` | `left` \| `right` \| `top` \| `bottom` | `right` |
+| `rotuloCategoria` | String | `'Categoria'` |
+| `rotuloQuantidade` | String | `'Quantidade'` |
+| `mostrarCabecalho` | Boolean | `true` |
+
+### CardPolar
+
+Polar area com grid configurável.
+
+| Prop | Tipo | Padrão |
+|---|---|---|
+| `cores` | Array&lt;String&gt; | paleta padrão |
+| `mostrarLinhasGrade` | Boolean | `true` |
+
+### CardProgresso
+
+Barras de progresso lineares ou circulares com meta.
+
+```vue
+<CardProgresso
+  legenda="Metas"
+  titulo="72%"
+  formato="linear"
+  :data="[
+    { rotulo: 'Vendas', quantidade: 72, meta: 100 },
+    { rotulo: 'Serviços', quantidade: 48, meta: 80 },
+  ]"
+/>
+```
+
+| Prop | Tipo | Padrão |
+|---|---|---|
+| `formato` | `linear` \| `circular` | `linear` |
+| `metaPadrao` | Number | `100` |
+| `mostrarValor` | Boolean | `true` |
+| `mostrarPercentual` | Boolean | `true` |
+| `alturaBarra` | Number/String | `8` |
+| `raioBarra` | String/Number | `'999px'` |
+| `cutout` | String/Number | `'78%'` |
+
+### CardBase
+
+Esqueleto sem gráfico. Útil para criar visualizações customizadas mantendo o visual da biblioteca.
+
+```vue
+<CardBase legenda="Custom" titulo="R$ 1k" descricao="exemplo">
+  <template #footer>
+    <MeuConteudoCustomizado />
+  </template>
+</CardBase>
+```
+
+### ChartBase
+
+Wrapper fino sobre Chart.js.
+
+```vue
+<ChartBase
+  type="line"
+  :data="chartData"
+  :options="chartOptions"
+  :height="280"
+/>
+```
+
+---
+
+## Props comuns
+
+Todas as variantes de `Card*` aceitam estas props:
+
+| Prop | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| `legenda` | String | — | Título superior. |
+| `sublegenda` | String | — | Texto auxiliar abaixo da legenda. |
+| `titulo` | String | — | Valor de destaque. |
+| `descricao` | String | — | Texto complementar do título. |
+| `tema` | `light` \| `dark` | `light` | Paleta base. |
+| `corFundo` | String | — | Sobrescreve fundo. |
+| `corTexto` | String | — | Sobrescreve texto. |
+| `corBorda` | String | `#EAE8E8` | Borda externa. |
+| `borderRadius` | String/Number | `'1rem'` | Raio da borda. |
+| `sombra` | String | box-shadow padrão | Sombra. |
+| `tipoValor` | `numero` \| `moeda` \| `percentual` | `'numero'` | Formatação. |
+| `locale` | String | `'pt-BR'` | Locale do `Intl`. |
+| `moeda` | String | `'BRL'` | Código ISO da moeda. |
+| `height` | Number/String | varia | Altura do gráfico. |
+| `botaoVisivel` | Boolean | `false` | Mostra botão "Ver mais". |
+| `textoBotao` | String | `'Ver mais'` | Texto do botão. |
+| `exportar` | Boolean | `false` | Mostra botão de exportação. |
+| `nomeArquivoExport` | String | `'card-*.png'` | Nome do PNG. |
+| `data` | Array | amostra | Dados. |
+
+## Slots
+
+| Slot | Onde aparece |
+|---|---|
+| `legenda` | Substitui a `legenda`. |
+| `sublegenda` | Substitui a `sublegenda`. |
+| `titulo` | Substitui o `titulo`. |
+| `descricao` | Substitui a `descricao`. |
+| `actions` | Área superior direita do card (substitui o botão padrão). |
+| `footer` | Conteúdo extra abaixo do gráfico. |
+
+## Eventos
+
+| Evento | Quando |
+|---|---|
+| `botaoAcao` | Clique no botão "Ver mais". |
+| `exportado` | Após o PNG ser gerado e baixado. |
+
+## Composables internos
+
+Disponíveis para customizar gráficos sob medida:
+
+- `useTema(props)` — calcula `palette` (bg, text, muted, …) e `cardStyle`.
+- `useFormatadorValor(props)` — retorna `formatar(valor)` com base em `tipoValor`/`locale`/`moeda`.
+- `useTooltipExterno` — utilitários para tooltip HTML customizado (`criarTooltipEl`, `prepararTooltipParent`, `clampHorizontal`).
+- `useExportarImagem` — `exportarElementoComoImagem(el, opções)` e o ícone SVG padrão.
+
+---
+
+## Playground & Dashboard
+
+Este repositório já vem com um app de demonstração com 3 rotas (vue-router):
+
+| Rota | Conteúdo |
+|---|---|
+| `/playground` | Exemplos estáticos lado a lado. |
+| `/dashboard` | Dashboard interativo: arraste cards pelo cabeçalho, redimensione pelo canto inferior direito e adicione novos cards pela barra lateral. O layout é persistido no `localStorage`. |
+| `/docs` | Documentação navegável dentro do próprio app. |
+
+Comandos:
+
+```bash
+npm install
+npm run dev       # roda o playground em modo dev
+npm run build:lib # gera o bundle distribuível em dist/
+npm run storybook # abre o Storybook
+```
+
+---
+
+## Licença
+
+MIT.

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(mkdir -p CardPizza CardLinhas CardBarra ChartBase)",
+      "Bash(mv CardPizza.vue CardPizza.stories.js CardPizza/)",
+      "Bash(mv CardLinhas.vue CardLinhas.stories.js CardLinhas/)",
+      "Bash(mv CardBarra.vue CardBarra.stories.js CardBarra/)",
+      "Bash(mv ChartBase.vue ChartBase/)",
+      "Bash(npx vite *)",
+      "Bash(npx storybook *)",
+      "Bash(npm pack *)"
+    ]
+  }
+}
