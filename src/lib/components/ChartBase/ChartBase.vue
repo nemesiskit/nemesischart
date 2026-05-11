@@ -113,7 +113,7 @@ defineExpose({ chart: chartInstance })
 
 <template>
   <div
-    class="nc-chart-wrapper"
+    class="nc-chart-wrapper w-full"
     :style="{
       height: typeof height === 'number' ? `${height}px` : height,
       width: width ? (typeof width === 'number' ? `${width}px` : width) : '100%',

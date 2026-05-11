@@ -165,40 +165,40 @@ function onBotaoClick() {
 </script>
 
 <template>
-  <div ref="cardRef" class="card-polar p-4" :class="layoutClass" :style="cardStyle">
-    <div class="card-polar__topo">
-      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-polar__legendas">
-        <div v-if="$slots.legenda || legenda" class="text-sm font-medium" :style="{ color: palette.text, opacity: 0.95 }">
+  <div ref="cardRef" class="card-polar p-4 flex flex-column" :class="layoutClass" :style="cardStyle">
+    <div class="card-polar__topo flex align-items-start justify-content-between gap-3">
+      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-polar__legendas flex flex-column">
+        <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.95 }">
           <slot name="legenda">{{ legenda }}</slot>
         </div>
         <div v-if="$slots.sublegenda || sublegenda" class="text-xs" :style="{ color: palette.muted }">
           <slot name="sublegenda">{{ sublegenda }}</slot>
         </div>
       </div>
-      <div v-if="$slots.actions || botaoVisivel || exportar" class="card-polar__actions">
+      <div v-if="$slots.actions || botaoVisivel || exportar" class="card-polar__actions inline-flex align-items-center gap-2">
         <slot name="actions">
-          <button v-if="botaoVisivel" class="card-polar__btn"
+          <button v-if="botaoVisivel" class="card-polar__btn inline-flex align-items-center"
             :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }" @click="onBotaoClick">
             <span>{{ textoBotao }}</span>
           </button>
         </slot>
-        <button v-if="exportar" type="button" class="card-polar__exportar"
+        <button v-if="exportar" type="button" class="card-polar__exportar inline-flex align-items-center justify-content-center"
           :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
           title="Exportar como imagem" aria-label="Exportar como imagem"
           @click="onExportar" v-html="iconeExportar"></button>
       </div>
     </div>
 
-    <div class="card-polar__corpo">
-      <div class="card-polar__tabela">
-        <div v-if="mostrarCabecalho" class="card-polar__tabela-cab"
+    <div class="card-polar__corpo flex align-items-center gap-4">
+      <div class="card-polar__tabela flex flex-column">
+        <div v-if="mostrarCabecalho" class="card-polar__tabela-cab flex align-items-center justify-content-between"
           :style="{ color: palette.muted, borderColor: toRgba(palette.muted, 0.25) }">
           <span>{{ rotuloCategoria }}</span>
           <span class="card-polar__tabela-valor">{{ rotuloQuantidade }}</span>
         </div>
-        <div v-for="(item, i) in data" :key="i" class="card-polar__tabela-linha"
+        <div v-for="(item, i) in data" :key="i" class="card-polar__tabela-linha flex align-items-center justify-content-between"
           :style="{ color: palette.text }">
-          <span class="card-polar__tabela-rotulo">
+          <span class="card-polar__tabela-rotulo inline-flex align-items-center gap-2">
             <span class="card-polar__bolinha" :style="{ background: coresAplicadas[i] }"></span>
             <span>{{ item.rotulo }}</span>
           </span>
@@ -206,11 +206,11 @@ function onBotaoClick() {
         </div>
       </div>
 
-      <div class="card-polar__chart-wrap">
+      <div class="card-polar__chart-wrap flex align-items-center justify-content-center">
         <div class="card-polar__chart">
           <ChartBase type="polarArea" :data="chartData" :options="chartOptions" :height="height" />
           <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-polar__centro-bottom">
-            <div v-if="$slots.titulo || titulo" class="card-polar__centro-titulo" :style="{ color: palette.text }">
+            <div v-if="$slots.titulo || titulo" class="card-polar__centro-titulo m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
               <slot name="titulo">{{ titulo }}</slot>
             </div>
             <div v-if="$slots.descricao || descricao" class="card-polar__centro-desc" :style="{ color: palette.muted }">

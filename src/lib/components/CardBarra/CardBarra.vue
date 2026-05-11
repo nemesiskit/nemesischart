@@ -229,7 +229,7 @@ const chartOptions = computed(() => {
   const eixoCategoria = {
     grid: { display: false, drawBorder: false },
     border: { display: false },
-    ticks: { color: palette.value.muted, font: { size: 11, family: "'Inter', sans-serif" }, padding: 8 },
+    ticks: { color: palette.value.muted, font: { size: 10, family: "'Inter', sans-serif" }, padding: 8 },
     stacked: props.empilhado,
   }
   const eixoValor = {
@@ -262,7 +262,7 @@ const chartOptions = computed(() => {
           boxHeight: 8,
           usePointStyle: true,
           pointStyle: 'circle',
-          font: { size: 11, family: "'Inter', sans-serif" },
+          font: { size: 10, family: "'Inter', sans-serif" },
           padding: 12,
         },
       },
@@ -485,32 +485,32 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
 </script>
 
 <template>
-  <div ref="cardRef" class="card-barra p-4" :class="layoutClass" :style="cardStyle">
-    <div class="card-barra__header">
-      <div class="card-barra__topo">
-        <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-barra__legendas">
-          <div v-if="$slots.legenda || legenda" class="text-sm font-medium" :style="{ color: palette.text, opacity: 0.85 }">
+  <div ref="cardRef" class="card-barra p-4 flex" :class="layoutClass" :style="cardStyle">
+    <div class="card-barra__header flex flex-column">
+      <div class="card-barra__topo flex align-items-start justify-content-between gap-3">
+        <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-barra__legendas flex flex-column">
+          <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.85 }">
             <slot name="legenda">{{ legenda }}</slot>
           </div>
           <div v-if="$slots.sublegenda || sublegenda" class="text-xs" :style="{ color: palette.muted }">
             <slot name="sublegenda">{{ sublegenda }}</slot>
           </div>
         </div>
-        <div v-if="$slots.actions || botaoVisivel || exportar" class="card-barra__actions">
+        <div v-if="$slots.actions || botaoVisivel || exportar" class="card-barra__actions inline-flex align-items-center gap-2">
           <slot name="actions">
-            <button v-if="botaoVisivel" class="card-barra__btn" :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }"
+            <button v-if="botaoVisivel" class="card-barra__btn inline-flex align-items-center" :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }"
               @click="onBotaoClick">
               <span>{{ textoBotao }}</span>
             </button>
           </slot>
-          <button v-if="exportar" type="button" class="card-barra__exportar"
+          <button v-if="exportar" type="button" class="card-barra__exportar inline-flex align-items-center justify-content-center"
             :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
             title="Exportar como imagem" aria-label="Exportar como imagem"
             @click="onExportar" v-html="iconeExportar"></button>
         </div>
       </div>
-      <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-barra__titulos mt-3 mb-2">
-        <div v-if="$slots.titulo || titulo" class="text-4xl font-semibold line-height-2" :style="{ color: palette.text }">
+      <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-barra__titulos mt-3 mb-2 flex flex-column">
+        <div v-if="$slots.titulo || titulo" class="m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
           <slot name="titulo">{{ titulo }}</slot>
         </div>
         <div v-if="$slots.descricao || descricao" class="text-sm mt-1" :style="{ color: palette.muted }">
@@ -519,7 +519,7 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
       </div>
     </div>
 
-    <div class="card-barra__chart">
+    <div class="card-barra__chart flex-1">
       <ChartBase type="bar" :data="chartData" :options="chartOptions" :plugins="pluginsChart" :height="height" />
     </div>
 

@@ -131,12 +131,43 @@ function externalTooltip(context) {
   const ttWidth = el.offsetWidth
   const ttHeight = el.offsetHeight
   const margin = 4
-  const left = clampHorizontal(offsetLeft + tooltip.caretX, ttWidth, parent.clientWidth, margin)
-  let top = offsetTop + tooltip.caretY
+  const targetX = offsetLeft + tooltip.caretX
+  const targetY = offsetTop + tooltip.caretY
+  const left = clampHorizontal(targetX, ttWidth, parent.clientWidth, margin)
   const minTop = ttHeight + 16 + margin
-  if (top < minTop) top = minTop
+  const flipBelow = targetY < minTop
+  let top
+  if (flipBelow) {
+    el.style.transform = 'translateX(-50%) translateY(16px)'
+    top = targetY
+  } else {
+    el.style.transform = 'translate(-50%, calc(-100% - 16px))'
+    top = targetY
+  }
   el.style.left = left + 'px'
   el.style.top = top + 'px'
+  const caret = el.querySelector('.nc-tt__caret')
+  if (caret) {
+    const offset = targetX - left
+    const half = ttWidth / 2
+    const clampedOffset = Math.max(-half + 8, Math.min(half - 8, offset))
+    caret.style.left = `calc(50% + ${clampedOffset}px)`
+    if (flipBelow) {
+      caret.style.bottom = ''
+      caret.style.top = '-5px'
+      caret.style.borderRight = ''
+      caret.style.borderBottom = ''
+      caret.style.borderLeft = '1px solid rgba(15,23,42,.06)'
+      caret.style.borderTop = '1px solid rgba(15,23,42,.06)'
+    } else {
+      caret.style.top = ''
+      caret.style.bottom = '-5px'
+      caret.style.borderLeft = ''
+      caret.style.borderTop = ''
+      caret.style.borderRight = '1px solid rgba(15,23,42,.06)'
+      caret.style.borderBottom = '1px solid rgba(15,23,42,.06)'
+    }
+  }
   el.style.visibility = 'visible'
 }
 
@@ -145,7 +176,7 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: false,
   interaction: { intersect: false, mode: 'index' },
   layout: {
-    padding: { top: 12, right: 0, bottom: 0, left: 0 },
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
   },
   plugins: {
     legend: { display: false },
@@ -160,9 +191,19 @@ const chartOptions = computed(() => ({
   },
   scales: {
     x: {
+      display: true,
+      afterFit: (scale) => {
+        scale.paddingLeft = 0
+        scale.paddingRight = 0
+      },
       grid: { display: false, drawBorder: false },
       border: { display: false },
-      ticks: { color: palette.value.muted, font: { size: 11, family: "'Inter', sans-serif" }, padding: 8 },
+      ticks: {
+        color: palette.value.muted,
+        font: { size: 10, family: "'Inter', sans-serif" },
+        padding: 8,
+        align: 'inner',
+      },
     },
     y: {
       display: false,
@@ -178,32 +219,32 @@ function onBotaoClick() {
 </script>
 
 <template>
-  <div ref="cardRef" class="card-linhas p-4" :class="layoutClass" :style="cardStyle">
-    <div class="card-linhas__header">
-      <div class="card-linhas__topo">
-        <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-linhas__legendas">
-          <div v-if="$slots.legenda || legenda" class="text-sm font-medium" :style="{ color: palette.text, opacity: 0.85 }">
+  <div ref="cardRef" class="card-linhas p-4 flex" :class="layoutClass" :style="cardStyle">
+    <div class="card-linhas__header flex flex-column">
+      <div class="card-linhas__topo flex align-items-start justify-content-between gap-3">
+        <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-linhas__legendas flex flex-column">
+          <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.85 }">
             <slot name="legenda">{{ legenda }}</slot>
           </div>
           <div v-if="$slots.sublegenda || sublegenda" class="text-xs" :style="{ color: palette.muted }">
             <slot name="sublegenda">{{ sublegenda }}</slot>
           </div>
         </div>
-        <div v-if="$slots.actions || botaoVisivel || exportar" class="card-linhas__actions">
+        <div v-if="$slots.actions || botaoVisivel || exportar" class="card-linhas__actions inline-flex align-items-center gap-2">
           <slot name="actions">
-            <button v-if="botaoVisivel" class="card-linhas__btn" :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }"
+            <button v-if="botaoVisivel" class="card-linhas__btn inline-flex align-items-center" :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }"
               @click="onBotaoClick">
               <span>{{ textoBotao }}</span>
             </button>
           </slot>
-          <button v-if="exportar" type="button" class="card-linhas__exportar"
+          <button v-if="exportar" type="button" class="card-linhas__exportar inline-flex align-items-center justify-content-center"
             :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
             title="Exportar como imagem" aria-label="Exportar como imagem"
             @click="onExportar" v-html="iconeExportar"></button>
         </div>
       </div>
-      <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-linhas__titulos mt-3 mb-2">
-        <div v-if="$slots.titulo || titulo" class="text-4xl font-semibold line-height-2" :style="{ color: palette.text }">
+      <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-linhas__titulos mt-3 mb-2 flex flex-column">
+        <div v-if="$slots.titulo || titulo" class="m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
           <slot name="titulo">{{ titulo }}</slot>
         </div>
         <div v-if="$slots.descricao || descricao" class="text-sm mt-1" :style="{ color: palette.muted }">
@@ -212,7 +253,7 @@ function onBotaoClick() {
       </div>
     </div>
 
-    <div class="card-linhas__chart">
+    <div class="card-linhas__chart flex-1">
       <ChartBase type="line" :data="chartData" :options="chartOptions" :height="height" />
     </div>
 
@@ -234,6 +275,7 @@ function onBotaoClick() {
 .card-linhas__header {
   display: flex;
   flex-direction: column;
+  padding: 1rem;
 }
 
 .card-linhas__topo {
@@ -286,24 +328,26 @@ function onBotaoClick() {
 
 .card-linhas--top {
   flex-direction: column;
+  padding: 0 !important;
 }
 
 .card-linhas--bottom {
   flex-direction: column-reverse;
+  padding: 0 !important;
 }
 
 .card-linhas--top .card-linhas__chart,
 .card-linhas--bottom .card-linhas__chart {
-  margin-left: -1.25rem;
-  margin-right: -1.25rem;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .card-linhas--top .card-linhas__chart {
-  margin-bottom: -0.5rem;
+  margin-bottom: 0;
 }
 
 .card-linhas--bottom .card-linhas__chart {
-  margin-top: -0.5rem;
+  margin-top: 0;
 }
 
 .card-linhas--left {
@@ -360,23 +404,13 @@ function onBotaoClick() {
   }
   .card-linhas--left .card-linhas__chart,
   .card-linhas--right .card-linhas__chart {
-    margin-left: -1.25rem;
-    margin-right: -1.25rem;
+    margin-left: 0;
+    margin-right: 0;
   }
-  .card-linhas__titulos :deep(.text-4xl),
-  .card-linhas__titulos .text-4xl {
-    font-size: 1.75rem !important;
-    line-height: 1.15 !important;
-  }
+ 
   .card-linhas__btn {
     padding: 0.4rem 0.85rem;
     font-size: 0.82rem;
-  }
-}
-
-@media (max-width: 380px) {
-  .card-linhas__titulos .text-4xl {
-    font-size: 1.4rem !important;
   }
 }
 </style>

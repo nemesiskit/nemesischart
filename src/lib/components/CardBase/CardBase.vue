@@ -45,25 +45,25 @@ async function onExportar() {
 </script>
 
 <template>
-  <div ref="cardRef" class="card-base p-4" :class="`card-base--${alinhamento}`" :style="cardStyle">
+  <div ref="cardRef" class="card-base p-4 flex flex-column" :class="`card-base--${alinhamento}`" :style="cardStyle">
     <div v-if="exportar" class="card-base__topo">
-      <button type="button" class="card-base__exportar"
+      <button type="button" class="card-base__exportar inline-flex align-items-center justify-content-center"
         :style="{ color: palette.muted, borderColor: toRgba(palette.text === 'inherit' ? '#0F172A' : palette.text, 0.18) }"
         title="Exportar como imagem" aria-label="Exportar como imagem"
         @click="onExportar" v-html="iconeExportar"></button>
     </div>
 
-    <div class="card-base__legendas">
-      <div v-if="$slots.legenda || legenda" class="card-base__legenda" :style="{ color: palette.text }">
+    <div class="card-base__legendas flex flex-column">
+      <div v-if="$slots.legenda || legenda" class="card-base__legenda text-xs" :style="{ color: palette.text }">
         <slot name="legenda">{{ legenda }}</slot>
       </div>
-      <div v-if="$slots.sublegenda || sublegenda" class="card-base__sublegenda" :style="{ color: palette.muted }">
+      <div v-if="$slots.sublegenda || sublegenda" class="card-base__sublegenda text-xs" :style="{ color: palette.muted }">
         <slot name="sublegenda">{{ sublegenda }}</slot>
       </div>
     </div>
 
-    <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-base__titulos">
-      <div v-if="$slots.titulo || titulo" class="card-base__titulo" :style="{ color: palette.text }">
+    <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-base__titulos flex flex-column">
+      <div v-if="$slots.titulo || titulo" class="card-base__titulo m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
         <slot name="titulo">{{ titulo }}</slot>
       </div>
       <div v-if="$slots.descricao || descricao" class="card-base__descricao" :style="{ color: palette.muted }">
@@ -71,9 +71,9 @@ async function onExportar() {
       </div>
     </div>
 
-    <div v-if="$slots.acao || botaoVisivel" class="card-base__acao">
+    <div v-if="$slots.acao || botaoVisivel" class="card-base__acao flex">
       <slot name="acao">
-        <button v-if="botaoVisivel" type="button" class="card-base__link"
+        <button v-if="botaoVisivel" type="button" class="card-base__link text-xs inline-flex align-items-center"
           :style="{ color: palette.text }" @click="onBotaoClick">
           <span>{{ textoBotao }}</span>
           <span class="card-base__chevron" aria-hidden="true">›</span>
@@ -160,7 +160,6 @@ async function onExportar() {
   background: transparent;
   border: none;
   padding: 0;
-  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;

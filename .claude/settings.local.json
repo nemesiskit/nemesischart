@@ -10,7 +10,9 @@
       "Bash(mv ChartBase.vue ChartBase/)",
       "Bash(npx vite *)",
       "Bash(npx storybook *)",
-      "Bash(npm pack *)"
+      "Bash(npm pack *)",
+      "Bash(ls \"c:\\\\Users\\\\neemi\\\\Documents\\\\GitHub\\\\\" 2>&1 | head -50)",
+      "Read(//c/Users/neemi/Documents/**)"
     ]
   }
 }
