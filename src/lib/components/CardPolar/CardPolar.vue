@@ -15,7 +15,7 @@ const props = defineProps({
   corFundo: { type: String, default: null },
   corTexto: { type: String, default: null },
   corBorda: { type: String, default: '#EAE8E8' },
-  borderRadius: { type: [String, Number], default: '1rem' },
+  borderRadius: { type: [String, Number], default: '0.75rem' },
   sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
   cores: {
     type: Array,
@@ -234,7 +234,7 @@ function onBotaoClick() {
   gap: 1rem;
   transition: background 0.2s ease;
   overflow: hidden;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 
 .card-polar__topo {
@@ -341,11 +341,22 @@ function onBotaoClick() {
   align-items: center;
   gap: 0.65rem;
   min-width: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+}
+
+.card-polar__tabela-rotulo > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card-polar__tabela-valor {
   font-variant-numeric: tabular-nums;
   font-weight: 500;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding-left: 0.5rem;
 }
 
 .card-polar__bolinha {
@@ -414,6 +425,10 @@ function onBotaoClick() {
     align-items: stretch;
     gap: 1rem;
   }
+  .card-polar--left .card-polar__tabela,
+  .card-polar--right .card-polar__tabela {
+    width: 100%;
+  }
   .card-polar__chart-wrap { width: 100%; }
   .card-polar__chart {
     max-width: 280px;
@@ -436,5 +451,5 @@ function onBotaoClick() {
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
 </style>

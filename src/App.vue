@@ -30,7 +30,7 @@ const tituloAtual = computed(() => route.meta?.titulo || 'NemesisChart')
 </template>
 
 <style>
-body { margin: 0; background: #F8FAFC; font-family: 'Inter', sans-serif; color: #0F172A; }
+body { margin: 0; background: #F8FAFC; font-family: 'Geist', sans-serif; color: #0F172A; }
 .app { min-height: 100vh; display: flex; flex-direction: column; }
 
 .app__header {

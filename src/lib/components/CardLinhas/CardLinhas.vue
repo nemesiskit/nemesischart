@@ -47,9 +47,10 @@ const props = defineProps({
     ],
   },
   height: { type: [String, Number], default: 280 },
-  borderRadius: { type: [String, Number], default: '1rem' },
+  borderRadius: { type: [String, Number], default: '0.75rem' },
   sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
   corBorda: { type: String, default: '#EAE8E8' },
+  linhasReferencia: { type: [Object, Array], default: null },
   exportar: { type: Boolean, default: false },
   nomeArquivoExport: { type: String, default: 'card-linhas.png' },
 })
@@ -71,6 +72,175 @@ async function onExportar() {
 
 const layoutClass = computed(() => `card-linhas--${props.direcao}`)
 
+const linhasNormalizadas = computed(() => {
+  if (!props.linhasReferencia) return []
+  const arr = Array.isArray(props.linhasReferencia) ? props.linhasReferencia : [props.linhasReferencia]
+  return arr
+    .filter((l) => l && (typeof l === 'number' || typeof l.valor === 'number'))
+    .map((l) => {
+      if (typeof l === 'number') {
+        return { valor: l, rotulo: null, cor: '#0F172A', corRotulo: '#0F172A', corTexto: '#FFFFFF', tracejado: [6, 6], espessura: 1 }
+      }
+      return {
+        valor: l.valor,
+        rotulo: l.rotulo ?? null,
+        cor: l.cor || '#0F172A',
+        corRotulo: l.corRotulo || l.cor || '#0F172A',
+        corTexto: l.corTexto || '#FFFFFF',
+        tracejado: l.tracejado || [6, 6],
+        espessura: l.espessura ?? 1,
+      }
+    })
+})
+
+const linhasPosicoes = []
+let linhaHover = null
+
+const pluginLinhaReferencia = {
+  id: 'linhaReferencia',
+  afterDatasetsDraw(chart) {
+    const linhas = linhasNormalizadas.value
+    linhasPosicoes.length = 0
+    if (!linhas.length) return
+    const { ctx, chartArea, scales } = chart
+    const escalaValor = scales.y
+    if (!escalaValor) return
+    linhas.forEach((linha) => {
+      const pos = escalaValor.getPixelForValue(linha.valor)
+      linhasPosicoes.push({ linha, pos, chartArea })
+      ctx.save()
+      ctx.beginPath()
+      ctx.setLineDash(linha.tracejado)
+      ctx.lineWidth = linha.espessura
+      ctx.strokeStyle = linha.cor
+      if (pos < chartArea.top || pos > chartArea.bottom) { ctx.restore(); return }
+      ctx.moveTo(chartArea.left, pos)
+      ctx.lineTo(chartArea.right, pos)
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      if (linha.rotulo) {
+        ctx.font = "600 11px 'Inter', sans-serif"
+        const padX = 8
+        const padY = 5
+        const metrics = ctx.measureText(linha.rotulo)
+        const textW = metrics.width
+        const textH = 12
+        const boxW = textW + padX * 2
+        const boxH = textH + padY * 2
+        const raio = boxH / 2
+        let bx = chartArea.left - boxW - 6
+        let by = pos - boxH / 2
+        if (bx < 0) bx = chartArea.left + 6
+        ctx.fillStyle = linha.corRotulo
+        ctx.beginPath()
+        if (ctx.roundRect) {
+          ctx.roundRect(bx, by, boxW, boxH, raio)
+        } else {
+          ctx.moveTo(bx + raio, by)
+          ctx.lineTo(bx + boxW - raio, by)
+          ctx.quadraticCurveTo(bx + boxW, by, bx + boxW, by + raio)
+          ctx.lineTo(bx + boxW, by + boxH - raio)
+          ctx.quadraticCurveTo(bx + boxW, by + boxH, bx + boxW - raio, by + boxH)
+          ctx.lineTo(bx + raio, by + boxH)
+          ctx.quadraticCurveTo(bx, by + boxH, bx, by + boxH - raio)
+          ctx.lineTo(bx, by + raio)
+          ctx.quadraticCurveTo(bx, by, bx + raio, by)
+        }
+        ctx.fill()
+        ctx.fillStyle = linha.corTexto
+        ctx.textBaseline = 'middle'
+        ctx.textAlign = 'center'
+        ctx.fillText(linha.rotulo, bx + boxW / 2, by + boxH / 2)
+      }
+      ctx.restore()
+    })
+  },
+  beforeEvent(chart, args) {
+    if (!linhasPosicoes.length) { linhaHover = null; return }
+    const evt = args.event
+    if (!evt || evt.type === 'mouseout' || evt.x == null || evt.y == null) { linhaHover = null; return }
+    const limiar = 8
+    let proxima = null
+    let menorDist = Infinity
+    for (const p of linhasPosicoes) {
+      const dist = Math.abs(evt.y - p.pos)
+      const dentroEixo = evt.x >= p.chartArea.left && evt.x <= p.chartArea.right
+      if (dist <= limiar && dentroEixo && dist < menorDist) {
+        menorDist = dist
+        proxima = p
+      }
+    }
+    linhaHover = proxima
+  },
+  afterEvent(chart, args) {
+    if (!linhasPosicoes.length) return
+    const evt = args.event
+    if (!evt) return
+    const parent = prepararTooltipParent(chart)
+    if (!parent) return
+    let el = parent.querySelector('.nc-tt-linhaRef')
+
+    if (!linhaHover) {
+      if (el) el.style.opacity = '0'
+      return
+    }
+    const proxima = linhaHover
+
+    if (!el) {
+      el = document.createElement('div')
+      el.className = 'nc-tt-linhaRef'
+      Object.assign(el.style, {
+        position: 'absolute',
+        pointerEvents: 'none',
+        transform: 'translate(-50%, calc(-100% - 12px))',
+        transition: 'opacity .18s ease, left .12s ease, top .12s ease',
+        opacity: '0',
+        background: '#ffffff',
+        borderRadius: '10px',
+        padding: '8px 11px',
+        boxShadow: '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.12)',
+        border: '1px solid rgba(15,23,42,.06)',
+        whiteSpace: 'nowrap',
+        zIndex: '11',
+        fontFamily: "'Inter', sans-serif",
+        textAlign: 'left',
+      })
+      parent.appendChild(el)
+    }
+    const cor = proxima.linha.cor || '#0F172A'
+    const valorFormatado = formatar(proxima.linha.valor)
+    const rotulo = proxima.linha.rotulo
+    el.innerHTML =
+      (rotulo
+        ? `<div style="font-size:9px;font-weight:500;color:#94A3B8;letter-spacing:.04em;text-transform:uppercase;line-height:1;margin-bottom:4px;">${rotulo}</div>`
+        : '') +
+      `<div style="display:flex;align-items:center;gap:6px;">` +
+        `<span style="width:6px;height:6px;border-radius:999px;background:${cor};box-shadow:0 0 0 2px ${toRgba(cor, 0.15)};flex:0 0 auto;"></span>` +
+        `<span style="font-size:12px;font-weight:700;color:#0F172A;letter-spacing:-.01em;line-height:1.1;">${valorFormatado}</span>` +
+      `</div>`
+
+    const canvas = chart.canvas
+    el.style.opacity = '1'
+    el.style.visibility = 'hidden'
+    el.style.left = '0px'
+    el.style.top = '0px'
+    const ttWidth = el.offsetWidth
+    const ttHeight = el.offsetHeight
+    const margin = 4
+    const ancoraX = canvas.offsetLeft + evt.x
+    const ancoraY = canvas.offsetTop + proxima.pos
+    const left = clampHorizontal(ancoraX, ttWidth, parent.clientWidth, margin)
+    let top = ancoraY
+    const minTop = ttHeight + 16 + margin
+    if (top < minTop) top = minTop
+    el.style.left = left + 'px'
+    el.style.top = top + 'px'
+    el.style.visibility = 'visible'
+  },
+}
+
+const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLinhaReferencia] : []))
 
 const chartData = computed(() => ({
   labels: props.data.map((d) => d.rotulo),
@@ -109,7 +279,7 @@ function externalTooltip(context) {
   const parent = prepararTooltipParent(chart)
   if (!parent) return
   const el = criarTooltipEl(parent)
-  if (tooltip.opacity === 0) {
+  if (tooltip.opacity === 0 || linhaHover) {
     el.style.opacity = '0'
     return
   }
@@ -176,7 +346,7 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: false,
   interaction: { intersect: false, mode: 'index' },
   layout: {
-    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    padding: { top: linhasNormalizadas.value.length ? 24 : 0, right: 0, bottom: 0, left: 0 },
   },
   plugins: {
     legend: { display: false },
@@ -254,7 +424,7 @@ function onBotaoClick() {
     </div>
 
     <div class="card-linhas__chart flex-1">
-      <ChartBase type="line" :data="chartData" :options="chartOptions" :height="height" />
+      <ChartBase type="line" :data="chartData" :options="chartOptions" :plugins="pluginsChart" :height="height" />
     </div>
 
     <div v-if="$slots.footer" class="card-linhas__footer mt-3">

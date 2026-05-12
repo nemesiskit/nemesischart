@@ -12,8 +12,8 @@ const props = defineProps({
   corFundo: { type: String, default: null },
   corTexto: { type: String, default: null },
   corBorda: { type: String, default: '#EAE8E8' },
-  borderRadius: { type: [String, Number], default: '1rem' },
-  sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
+  borderRadius: { type: [String, Number], default: '0.75rem' },
+  sombra: { type: String, default: 'none' },
   textoBotao: { type: String, default: 'Ver Todos' },
   botaoVisivel: { type: Boolean, default: true },
   alinhamento: {
@@ -66,7 +66,7 @@ async function onExportar() {
       <div v-if="$slots.titulo || titulo" class="card-base__titulo m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
         <slot name="titulo">{{ titulo }}</slot>
       </div>
-      <div v-if="$slots.descricao || descricao" class="card-base__descricao" :style="{ color: palette.muted }">
+      <div v-if="$slots.descricao || descricao" class="text-sm" :style="{ color: palette.muted }">
         <slot name="descricao">{{ descricao }}</slot>
       </div>
     </div>
@@ -94,7 +94,7 @@ async function onExportar() {
   gap: 1.25rem;
   transition: background 0.2s ease;
   overflow: hidden;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   position: relative;
 }
 
@@ -140,11 +140,7 @@ async function onExportar() {
   letter-spacing: -0.015em;
 }
 
-.card-base__descricao {
-  font-size: 0.95rem;
-  font-weight: 400;
-  line-height: 1.3;
-}
+
 
 .card-base__acao {
   display: flex;
@@ -206,5 +202,5 @@ async function onExportar() {
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
 </style>

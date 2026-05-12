@@ -14,7 +14,7 @@ const props = defineProps({
   corFundo: { type: String, default: null },
   corTexto: { type: String, default: null },
   corBorda: { type: String, default: '#EAE8E8' },
-  borderRadius: { type: [String, Number], default: '1rem' },
+  borderRadius: { type: [String, Number], default: '0.75rem' },
   sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
   cores: {
     type: Array,

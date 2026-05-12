@@ -59,10 +59,10 @@ const props = defineProps({
   empilhado: { type: Boolean, default: false },
   mostrarLegendaSeries: { type: Boolean, default: true },
   height: { type: [String, Number], default: 280 },
-  borderRadius: { type: [String, Number], default: '1rem' },
+  borderRadius: { type: [String, Number], default: '0.75rem' },
   sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
   corBorda: { type: String, default: '#EAE8E8' },
-  larguraBarra: { type: [String, Number], default: 0.6 },
+  larguraBarra: { type: [String, Number], default: 0.92 },
   raioBarra: { type: Number, default: 6 },
   linhasReferencia: { type: [Object, Array], default: null },
   exportar: { type: Boolean, default: false },
@@ -134,12 +134,12 @@ const chartData = computed(() => {
     datasets: series.map((s, i) => ({
       label: s.nome,
       data: s.dados.map((d) => d.quantidade),
-      backgroundColor: s.cor,
+      backgroundColor: toRgba(s.cor, 0.72),
       hoverBackgroundColor: s.cor,
       borderWidth: 0,
       borderRadius: raioSegmento(i),
       borderSkipped: false,
-      categoryPercentage: 0.9,
+      categoryPercentage: 1.0,
       barPercentage: largura,
     })),
   }
@@ -189,9 +189,9 @@ function externalTooltip(context) {
       : ''
     return (
       `<div style="display:flex;align-items:center;gap:6px;margin-top:2px;">` +
-        `<span style="width:6px;height:6px;border-radius:999px;background:${cor};box-shadow:0 0 0 2px ${toRgba(cor, 0.15)};flex:0 0 auto;"></span>` +
-        nome +
-        `<span style="font-size:12px;font-weight:700;color:#0F172A;letter-spacing:-.01em;line-height:1.1;margin-left:auto;">${valor}</span>` +
+      `<span style="width:6px;height:6px;border-radius:999px;background:${cor};box-shadow:0 0 0 2px ${toRgba(cor, 0.15)};flex:0 0 auto;"></span>` +
+      nome +
+      `<span style="font-size:12px;font-weight:700;color:#0F172A;letter-spacing:-.01em;line-height:1.1;margin-left:auto;">${valor}</span>` +
       `</div>`
     )
   }).join('')
@@ -451,8 +451,8 @@ const pluginLinhaReferencia = {
         ? `<div style="font-size:9px;font-weight:500;color:#94A3B8;letter-spacing:.04em;text-transform:uppercase;line-height:1;margin-bottom:4px;">${rotulo}</div>`
         : '') +
       `<div style="display:flex;align-items:center;gap:6px;">` +
-        `<span style="width:6px;height:6px;border-radius:999px;background:${cor};box-shadow:0 0 0 2px ${toRgba(cor, 0.15)};flex:0 0 auto;"></span>` +
-        `<span style="font-size:12px;font-weight:700;color:#0F172A;letter-spacing:-.01em;line-height:1.1;">${valorFormatado}</span>` +
+      `<span style="width:6px;height:6px;border-radius:999px;background:${cor};box-shadow:0 0 0 2px ${toRgba(cor, 0.15)};flex:0 0 auto;"></span>` +
+      `<span style="font-size:12px;font-weight:700;color:#0F172A;letter-spacing:-.01em;line-height:1.1;">${valorFormatado}</span>` +
       `</div>`
 
     const canvas = chart.canvas
@@ -488,29 +488,34 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
   <div ref="cardRef" class="card-barra p-4 flex" :class="layoutClass" :style="cardStyle">
     <div class="card-barra__header flex flex-column">
       <div class="card-barra__topo flex align-items-start justify-content-between gap-3">
-        <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-barra__legendas flex flex-column">
-          <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.85 }">
+        <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda"
+          class="card-barra__legendas flex flex-column">
+          <div v-if="$slots.legenda || legenda" class="text-xs font-medium"
+            :style="{ color: palette.text, opacity: 0.85 }">
             <slot name="legenda">{{ legenda }}</slot>
           </div>
           <div v-if="$slots.sublegenda || sublegenda" class="text-xs" :style="{ color: palette.muted }">
             <slot name="sublegenda">{{ sublegenda }}</slot>
           </div>
         </div>
-        <div v-if="$slots.actions || botaoVisivel || exportar" class="card-barra__actions inline-flex align-items-center gap-2">
+        <div v-if="$slots.actions || botaoVisivel || exportar"
+          class="card-barra__actions inline-flex align-items-center gap-2">
           <slot name="actions">
-            <button v-if="botaoVisivel" class="card-barra__btn inline-flex align-items-center" :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }"
-              @click="onBotaoClick">
+            <button v-if="botaoVisivel" class="card-barra__btn inline-flex align-items-center"
+              :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }" @click="onBotaoClick">
               <span>{{ textoBotao }}</span>
             </button>
           </slot>
-          <button v-if="exportar" type="button" class="card-barra__exportar inline-flex align-items-center justify-content-center"
-            :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
-            title="Exportar como imagem" aria-label="Exportar como imagem"
-            @click="onExportar" v-html="iconeExportar"></button>
+          <button v-if="exportar" type="button"
+            class="card-barra__exportar inline-flex align-items-center justify-content-center"
+            :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }" title="Exportar como imagem"
+            aria-label="Exportar como imagem" @click="onExportar" v-html="iconeExportar"></button>
         </div>
       </div>
-      <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-barra__titulos mt-3 mb-2 flex flex-column">
-        <div v-if="$slots.titulo || titulo" class="m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
+      <div v-if="$slots.titulo || titulo || $slots.descricao || descricao"
+        class="card-barra__titulos mt-3 mb-2 flex flex-column">
+        <div v-if="$slots.titulo || titulo" class="m-0 text-3xl font-semibold  "
+          :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
           <slot name="titulo">{{ titulo }}</slot>
         </div>
         <div v-if="$slots.descricao || descricao" class="text-sm mt-1" :style="{ color: palette.muted }">

@@ -28,7 +28,7 @@ export function useTema(props) {
     const preset = PRESETS[props.tema]
     const base = preset
       ? { ...preset, bg: props.corFundo || preset.bg }
-      : { bg: props.corFundo || props.tema, text: '#F8FAFC', muted: '#94A3B8', grid: 'rgba(255,255,255,0.08)' }
+      : { bg: props.corFundo || props.tema, text: '#F8FAFC', muted: '#7b7b7b', grid: 'rgba(255,255,255,0.08)' }
     return {
       ...base,
       text: props.corTexto || base.text,

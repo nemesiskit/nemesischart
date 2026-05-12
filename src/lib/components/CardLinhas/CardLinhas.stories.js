@@ -39,6 +39,7 @@ export default {
     botaoVisivel: { control: { type: 'boolean' } },
     exportar: { control: { type: 'boolean' } },
     nomeArquivoExport: { control: { type: 'text' } },
+    linhasReferencia: { control: { type: 'object' } },
     botaoAcao: { action: 'botaoAcao' },
     exportado: { action: 'exportado' },
   },
@@ -155,4 +156,150 @@ export const DadosAleatorios = {
       </CardLinhas>
     `,
   }),
+}
+
+const dadosSemana = [
+  { rotulo: 'Seg', quantidade: 3.5 },
+  { rotulo: 'Ter', quantidade: 5.2 },
+  { rotulo: 'Qua', quantidade: 7.8 },
+  { rotulo: 'Qui', quantidade: 4.6 },
+  { rotulo: 'Sex', quantidade: 6.1 },
+]
+
+export const LinhaReferencia = {
+  name: 'Linha de referência (simples)',
+  args: {
+    legenda: 'Horas trabalhadas',
+    sublegenda: 'semana atual',
+    titulo: null,
+    descricao: null,
+    tipoValor: 'numero',
+    corDetalhes: '#7C3AED',
+    data: dadosSemana,
+    linhasReferencia: { valor: 4.2, rotulo: 'Meta diária' },
+  },
+}
+
+export const LinhaReferenciaApenasValor = {
+  name: 'Linha sem rótulo (só valor)',
+  args: {
+    legenda: 'Receita diária',
+    sublegenda: 'últimos 7 dias',
+    titulo: null,
+    descricao: null,
+    tipoValor: 'moeda',
+    corDetalhes: '#0EA5E9',
+    data: [
+      { rotulo: 'Seg', quantidade: 8400 },
+      { rotulo: 'Ter', quantidade: 11200 },
+      { rotulo: 'Qua', quantidade: 9800 },
+      { rotulo: 'Qui', quantidade: 14500 },
+      { rotulo: 'Sex', quantidade: 17200 },
+      { rotulo: 'Sáb', quantidade: 6900 },
+      { rotulo: 'Dom', quantidade: 4300 },
+    ],
+    linhasReferencia: 10000,
+  },
+}
+
+export const LinhaReferenciaMeta = {
+  name: 'Linha como meta (verde)',
+  args: {
+    legenda: 'Faturamento',
+    sublegenda: '2026',
+    titulo: 'R$ 11M',
+    descricao: 'acumulado no ano',
+    tipoValor: 'moeda',
+    corDetalhes: '#3B82F6',
+    data: sampleData,
+    linhasReferencia: { valor: 2500000, rotulo: 'Meta mensal', cor: '#10B981' },
+  },
+}
+
+export const LinhaReferenciaMultipla = {
+  name: 'Múltiplas linhas (meta + stretch)',
+  args: {
+    legenda: 'Faturamento vs metas',
+    sublegenda: '2026',
+    titulo: null,
+    descricao: null,
+    tipoValor: 'moeda',
+    data: sampleData,
+    linhasReferencia: [
+      { valor: 1500000, rotulo: 'Meta', cor: '#10B981' },
+      { valor: 3000000, rotulo: 'Stretch', cor: '#EF4444' },
+    ],
+  },
+}
+
+export const LinhaReferenciaTema = {
+  name: 'Linha em tema escuro',
+  args: {
+    tema: 'dark',
+    legenda: 'Horas trabalhadas',
+    sublegenda: 'semana atual',
+    titulo: null,
+    descricao: null,
+    tipoValor: 'numero',
+    corDetalhes: '#7C3AED',
+    data: dadosSemana,
+    linhasReferencia: { valor: 4.2, rotulo: 'Meta diária', cor: '#F8FAFC', corRotulo: '#F8FAFC', corTexto: '#0F172A' },
+  },
+}
+
+export const LinhaReferenciaEstilos = {
+  name: 'Estilos de linha (tracejado, espessura)',
+  args: {
+    legenda: 'Métricas',
+    sublegenda: 'mensal',
+    titulo: null,
+    descricao: null,
+    tipoValor: 'numero',
+    data: [
+      { rotulo: 'Jan', quantidade: 45 },
+      { rotulo: 'Fev', quantidade: 62 },
+      { rotulo: 'Mar', quantidade: 38 },
+      { rotulo: 'Abr', quantidade: 84 },
+      { rotulo: 'Mai', quantidade: 71 },
+      { rotulo: 'Jun', quantidade: 56 },
+    ],
+    linhasReferencia: [
+      { valor: 30, rotulo: 'Mín', cor: '#EF4444', tracejado: [2, 4], espessura: 1 },
+      { valor: 60, rotulo: 'Média', cor: '#0F172A', tracejado: [6, 6], espessura: 1 },
+      { valor: 90, rotulo: 'Topo', cor: '#10B981', tracejado: [12, 4], espessura: 2 },
+    ],
+  },
+}
+
+export const LinhaReferenciaInterativa = {
+  name: 'Linha de referência interativa',
+  render: (args) => ({
+    components: { CardLinhas },
+    setup() {
+      const meta = ref(5)
+      return { args, meta }
+    },
+    template: `
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <label style="display:flex;align-items:center;gap:0.75rem;font-family:'Inter',sans-serif;font-size:0.85rem;">
+          Meta:
+          <input type="range" min="0" max="10" step="0.1" v-model.number="meta" style="flex:1;max-width:300px;" />
+          <span style="font-variant-numeric:tabular-nums;font-weight:600;min-width:3ch;">{{ meta.toFixed(1) }}</span>
+        </label>
+        <CardLinhas
+          v-bind="args"
+          :linhas-referencia="{ valor: meta, rotulo: meta.toFixed(1) + 'h' }"
+        />
+      </div>
+    `,
+  }),
+  args: {
+    legenda: 'Horas trabalhadas',
+    sublegenda: 'semana atual',
+    titulo: null,
+    descricao: null,
+    tipoValor: 'numero',
+    corDetalhes: '#7C3AED',
+    data: dadosSemana,
+  },
 }
