@@ -135,6 +135,7 @@ const chartData = computed(() => {
     datasets: series.map((s, i) => ({
       label: s.nome,
       data: s.dados.map((d) => d.quantidade),
+      previstos: s.dados.map((d) => (d.previsto != null ? d.previsto : null)),
       backgroundColor: toRgba(s.cor, 0.72),
       hoverBackgroundColor: props.corHover || s.cor,
       borderWidth: 0,
@@ -196,9 +197,24 @@ function externalTooltip(context) {
       `</div>`
     )
   }).join('')
+  const idxPrevisto = dataPoints[0]?.dataIndex
+  let previsto = null
+  if (idxPrevisto != null) {
+    for (const ds of chart.data.datasets) {
+      const v = ds.previstos?.[idxPrevisto]
+      if (v != null) { previsto = v; break }
+    }
+  }
+  const linhaPrevisto = previsto != null
+    ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:4px;border-top:1px dashed rgba(15,23,42,.08);">` +
+        `<span style="font-size:11px;color:#64748B;margin-right:6px;">Previsto</span>` +
+        `<span style="font-size:12px;font-weight:700;color:#0F172A;letter-spacing:-.01em;line-height:1.1;margin-left:auto;">${formatar(previsto)}</span>` +
+      `</div>`
+    : ''
   content.innerHTML =
     `<div style="font-size:9px;font-weight:500;color:#94A3B8;letter-spacing:.04em;text-transform:uppercase;line-height:1;margin-bottom:4px;">${titleLines.join(' ')}</div>` +
-    linhas
+    linhas +
+    linhaPrevisto
   const { offsetLeft, offsetTop } = chart.canvas
   el.style.opacity = '1'
   el.style.visibility = 'hidden'

@@ -448,7 +448,7 @@ function onBotaoClick() {
 .card-linhas__header {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .card-linhas__topo {

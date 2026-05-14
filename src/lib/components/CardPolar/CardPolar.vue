@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import ChartBase from '../ChartBase/ChartBase.vue'
-import { useTema, toRgba } from '../../composables/useTema.js'
+import { useTema, toRgba, gerarPaleta } from '../../composables/useTema.js'
 import { useFormatadorValor } from '../../composables/useFormatadorValor.js'
 import { criarTooltipEl, prepararTooltipParent, clampHorizontal } from '../../composables/useTooltipExterno.js'
 import { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from '../../composables/useExportarImagem.js'
@@ -17,10 +17,7 @@ const props = defineProps({
   corBorda: { type: String, default: '#EAE8E8' },
   borderRadius: { type: [String, Number], default: '0.75rem' },
   sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
-  cores: {
-    type: Array,
-    default: () => ['#0A1A6B', '#1535B5', '#1A5FD4', '#2F8DDF', '#5BB1E8', '#93D0F0', '#CDEAF6'],
-  },
+  corDetalhes: { type: String, default: '#3B82F6' },
   textoBotao: { type: String, default: 'Ver mais' },
   botaoVisivel: { type: Boolean, default: false },
   direcao: {
@@ -73,9 +70,10 @@ async function onExportar() {
 
 const layoutClass = computed(() => `card-polar--${props.direcao}`)
 
-const coresAplicadas = computed(() =>
-  props.data.map((_, i) => props.cores[i % props.cores.length])
-)
+const coresAplicadas = computed(() => {
+  const paleta = gerarPaleta(props.corDetalhes, props.data.length)
+  return props.data.map((d, i) => d.cor ?? paleta[i])
+})
 
 const chartData = computed(() => ({
   labels: props.data.map((d) => d.rotulo),
@@ -189,7 +187,7 @@ function onBotaoClick() {
       </div>
     </div>
 
-    <div class="card-polar__corpo flex align-items-center gap-4">
+    <div class="card-polar__corpo flex align-items-center">
       <div class="nc-tabela flex flex-column">
         <div v-if="mostrarCabecalho" class="nc-tabela-cab flex align-items-center justify-content-between"
           :style="{ color: palette.muted, borderColor: toRgba(palette.muted, 0.25) }">
@@ -229,6 +227,7 @@ function onBotaoClick() {
 
 <style scoped>
 .card-polar {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -246,7 +245,7 @@ function onBotaoClick() {
 
 .card-polar__corpo {
   display: flex;
-  gap: 1.5rem;
+  gap: 3.5rem;
   align-items: center;
   flex: 1 1 auto;
   min-height: 0;
@@ -276,8 +275,27 @@ function onBotaoClick() {
   margin: 0 auto;
 }
 
+/* tabela ocupa o espaço restante sem comprimir o gráfico (apenas layouts horizontais) */
+.card-polar--right .nc-tabela,
+.card-polar--left .nc-tabela {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.card-polar--top .nc-tabela,
+.card-polar--bottom .nc-tabela {
+  width: 100%;
+}
+
+/* gráfico: tamanho fixo em layouts horizontais */
+.card-polar--right .card-polar__chart-wrap,
+.card-polar--left .card-polar__chart-wrap {
+  flex: 0 0 clamp(140px, 38%, 240px);
+  width: clamp(140px, 38%, 240px);
+}
+
 .card-polar__chart-wrap {
-  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,7 +304,7 @@ function onBotaoClick() {
 .card-polar__chart {
   position: relative;
   width: 100%;
-  min-width: 220px;
+  min-width: 0;
 }
 
 .card-polar__centro-bottom {
@@ -305,33 +323,44 @@ function onBotaoClick() {
   margin-top: 0.15rem;
 }
 
-@media (max-width: 640px) {
+@container (max-width: 520px) {
   .card-polar { gap: 0.75rem; }
   .card-polar__topo { flex-wrap: wrap; }
+
   .card-polar--left .card-polar__corpo,
   .card-polar--right .card-polar__corpo {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
+
   .card-polar--left .nc-tabela,
   .card-polar--right .nc-tabela {
+    flex: 1 1 auto;
     width: 100%;
   }
-  .card-polar__chart-wrap { width: 100%; }
+
+  .card-polar--left .card-polar__chart-wrap,
+  .card-polar--right .card-polar__chart-wrap {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
   .card-polar__chart {
-    max-width: 280px;
-    min-width: 0;
+    max-width: 260px;
     margin: 0 auto;
   }
+
   .card-polar__centro-titulo { font-size: 1rem; }
   .card-polar__centro-desc { font-size: 0.78rem; }
   .nc-tabela-linha { font-size: 0.78rem; }
 }
 
-@media (max-width: 380px) {
-  .card-polar__chart { max-width: 220px; }
+@container (max-width: 340px) {
+  .card-polar__chart { max-width: 200px; }
   .card-polar__centro-titulo { font-size: 0.9rem; }
+  .nc-tabela-linha { font-size: 0.72rem; }
+  .nc-tabela-cab { font-size: 0.68rem; }
 }
 </style>
 

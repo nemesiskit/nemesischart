@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import ChartBase from '../ChartBase/ChartBase.vue'
-import { useTema, toRgba } from '../../composables/useTema.js'
+import { useTema, toRgba, gerarPaleta } from '../../composables/useTema.js'
 import { useFormatadorValor } from '../../composables/useFormatadorValor.js'
 import { criarTooltipEl, prepararTooltipParent, clampHorizontal } from '../../composables/useTooltipExterno.js'
 import { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from '../../composables/useExportarImagem.js'
@@ -17,10 +17,7 @@ const props = defineProps({
   corBorda: { type: String, default: '#EAE8E8' },
   borderRadius: { type: [String, Number], default: '0.75rem' },
   sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
-  cores: {
-    type: Array,
-    default: () => ['#0A1A6B', '#1535B5', '#1A5FD4', '#2F8DDF', '#5BB1E8', '#93D0F0', '#CDEAF6'],
-  },
+  corDetalhes: { type: String, default: '#3B82F6' },
   textoBotao: { type: String, default: 'Ver mais' },
   botaoVisivel: { type: Boolean, default: false },
   direcao: {
@@ -72,9 +69,10 @@ async function onExportar() {
 
 const layoutClass = computed(() => `card-pizza--${props.direcao}`)
 
-const coresAplicadas = computed(() =>
-  props.data.map((_, i) => props.cores[i % props.cores.length])
-)
+const coresAplicadas = computed(() => {
+  const paleta = gerarPaleta(props.corDetalhes, props.data.length)
+  return props.data.map((d, i) => d.cor ?? paleta[i])
+})
 
 const chartData = computed(() => ({
   labels: props.data.map((d) => d.rotulo),
@@ -178,7 +176,7 @@ const iconeExportar = ICONE_EXPORTAR_SVG
       </div>
     </div>
 
-    <div class="card-pizza__corpo flex align-items-center gap-4">
+    <div class="card-pizza__corpo flex align-items-center">
       <div class="nc-tabela flex flex-column">
         <div v-if="mostrarCabecalho" class="nc-tabela-cab flex align-items-center justify-content-between"
           :style="{ color: palette.muted, borderColor: toRgba(palette.muted, 0.25) }">
@@ -218,6 +216,7 @@ const iconeExportar = ICONE_EXPORTAR_SVG
 
 <style scoped>
 .card-pizza {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -235,7 +234,7 @@ const iconeExportar = ICONE_EXPORTAR_SVG
 
 .card-pizza__corpo {
   display: flex;
-  gap: 1.5rem;
+  gap: 3.5rem;
   align-items: center;
   flex: 1 1 auto;
   min-height: 0;
@@ -265,8 +264,27 @@ const iconeExportar = ICONE_EXPORTAR_SVG
   margin: 0 auto;
 }
 
+/* tabela ocupa o espaço restante sem comprimir o gráfico (apenas layouts horizontais) */
+.card-pizza--right .nc-tabela,
+.card-pizza--left .nc-tabela {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.card-pizza--top .nc-tabela,
+.card-pizza--bottom .nc-tabela {
+  width: 100%;
+}
+
+/* gráfico: tamanho fixo em layouts horizontais */
+.card-pizza--right .card-pizza__chart-wrap,
+.card-pizza--left .card-pizza__chart-wrap {
+  flex: 0 0 clamp(140px, 38%, 240px);
+  width: clamp(140px, 38%, 240px);
+}
+
 .card-pizza__chart-wrap {
-  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,36 +293,48 @@ const iconeExportar = ICONE_EXPORTAR_SVG
 .card-pizza__chart {
   position: relative;
   width: 100%;
-  min-width: 220px;
+  min-width: 0;
 }
 
-@media (max-width: 640px) {
+/* breakpoint baseado no tamanho do componente, não do viewport */
+@container (max-width: 520px) {
   .card-pizza { gap: 0.75rem; }
   .card-pizza__topo { flex-wrap: wrap; }
+
   .card-pizza--left .card-pizza__corpo,
   .card-pizza--right .card-pizza__corpo {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
+
   .card-pizza--left .nc-tabela,
   .card-pizza--right .nc-tabela {
+    flex: 1 1 auto;
     width: 100%;
   }
-  .card-pizza__chart-wrap { width: 100%; }
+
+  .card-pizza--left .card-pizza__chart-wrap,
+  .card-pizza--right .card-pizza__chart-wrap {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
   .card-pizza__chart {
-    max-width: 280px;
-    min-width: 0;
+    max-width: 260px;
     margin: 0 auto;
   }
+
   .nc-centro-titulo { font-size: 1.05rem; }
   .nc-centro-desc { font-size: 0.58rem; }
   .nc-tabela-linha { font-size: 0.78rem; }
 }
 
-@media (max-width: 380px) {
-  .card-pizza__chart { max-width: 220px; }
+@container (max-width: 340px) {
+  .card-pizza__chart { max-width: 200px; }
   .nc-centro-titulo { font-size: 0.9rem; }
+  .nc-tabela-linha { font-size: 0.72rem; }
+  .nc-tabela-cab { font-size: 0.68rem; }
 }
 </style>
 

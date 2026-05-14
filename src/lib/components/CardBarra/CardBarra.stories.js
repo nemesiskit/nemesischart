@@ -477,6 +477,54 @@ export const LinhaReferenciaInterativa = {
   },
 }
 
+const faturamentoEndpoint = [
+  { rotulo: 'Jan', total_previsto: 14774051.37, total_recebido: 10791652.48, total_em_aberto: 3982398.89 },
+  { rotulo: 'Fev', total_previsto: 12790446.8, total_recebido: 7844378.92, total_em_aberto: 4946067.88 },
+  { rotulo: 'Mar', total_previsto: 22860108.98, total_recebido: 18413203.84, total_em_aberto: 4446905.14 },
+  { rotulo: 'Abr', total_previsto: 8388918.21, total_recebido: 1550230.43, total_em_aberto: 6838687.78 },
+  { rotulo: 'Mai', total_previsto: 20257325.12, total_recebido: 17870993, total_em_aberto: 2386332.12 },
+  { rotulo: 'Jun', total_previsto: 7878621.99, total_recebido: 0, total_em_aberto: 7878621.99 },
+  { rotulo: 'Jul', total_previsto: 7568323.25, total_recebido: 0, total_em_aberto: 7568323.25 },
+  { rotulo: 'Ago', total_previsto: 935804.93, total_recebido: 0, total_em_aberto: 935804.93 },
+  { rotulo: 'Set', total_previsto: 3496123.12, total_recebido: 0, total_em_aberto: 3496123.12 },
+  { rotulo: 'Out', total_previsto: 701351.0, total_recebido: 30000, total_em_aberto: 671351.0 },
+  { rotulo: 'Nov', total_previsto: 505217.44, total_recebido: 0, total_em_aberto: 505217.44 },
+  { rotulo: 'Dez', total_previsto: 4186451.22, total_recebido: 0, total_em_aberto: 4186451.22 },
+]
+
+export const FaturamentoPrevistoVsRecebido = {
+  name: 'Faturamento (previsto no tooltip)',
+  args: {
+    legenda: 'Faturamento',
+    sublegenda: '2026',
+    titulo: null,
+    descricao: 'recebido x em aberto, com previsto no tooltip',
+    tipoValor: 'moeda',
+    empilhado: true,
+    larguraBarra: 0.6,
+    series: [
+      {
+        nome: 'Recebido',
+        cor: '#10B981',
+        dados: faturamentoEndpoint.map((r) => ({
+          rotulo: r.rotulo,
+          quantidade: r.total_recebido,
+          previsto: r.total_previsto,
+        })),
+      },
+      {
+        nome: 'Em aberto',
+        cor: '#F59E0B',
+        dados: faturamentoEndpoint.map((r) => ({
+          rotulo: r.rotulo,
+          quantidade: r.total_em_aberto,
+          previsto: r.total_previsto,
+        })),
+      },
+    ],
+  },
+}
+
 export const DadosAleatorios = {
   render: (args) => ({
     components: { CardBarra },

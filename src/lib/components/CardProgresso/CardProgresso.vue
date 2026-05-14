@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import ChartBase from '../ChartBase/ChartBase.vue'
-import { useTema, toRgba } from '../../composables/useTema.js'
+import { useTema, toRgba, gerarPaleta } from '../../composables/useTema.js'
 import { useFormatadorValor } from '../../composables/useFormatadorValor.js'
 import { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from '../../composables/useExportarImagem.js'
 
@@ -16,10 +16,6 @@ const props = defineProps({
   corBorda: { type: String, default: '#EAE8E8' },
   borderRadius: { type: [String, Number], default: '0.75rem' },
   sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
-  cores: {
-    type: Array,
-    default: () => ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899'],
-  },
   corDetalhes: { type: String, default: '#3B82F6' },
   corExcesso: { type: String, default: '#EF4444' },
   textoBotao: { type: String, default: 'Ver mais' },
@@ -78,11 +74,12 @@ async function onExportar() {
 
 const layoutClass = computed(() => `card-progresso--${props.direcao}`)
 
-const itens = computed(() =>
-  props.data.map((d, i) => {
+const itens = computed(() => {
+  const paleta = gerarPaleta(props.corDetalhes, props.data.length)
+  return props.data.map((d, i) => {
     const meta = Number(d.meta ?? props.metaPadrao) || 0
     const quantidade = Number(d.quantidade) || 0
-    const cor = d.cor || props.cores[i % props.cores.length]
+    const cor = d.cor ?? paleta[i]
     const isReducao = d.modo === 'reducao'
 
     let percentual
@@ -98,7 +95,7 @@ const itens = computed(() =>
 
     return { rotulo: d.rotulo, quantidade, meta, valorReferencia: d.valor_referencia ?? null, cor, percentual, reducao: isReducao }
   })
-)
+})
 
 const alturaBarraCss = computed(() =>
   typeof props.alturaBarra === 'number' ? `${props.alturaBarra}px` : props.alturaBarra
@@ -111,9 +108,13 @@ const totalQuantidade = computed(() => itens.value.reduce((s, i) => s + i.quanti
 const totalMeta = computed(() => itens.value.reduce((s, i) => s + i.meta, 0))
 const percentualTotal = computed(() => {
   if (!itens.value.length) return 0
-  const totalPeso = itens.value.reduce((s, item) => s + item.meta, 0)
+  const peso = (item) =>
+    item.reducao && item.valorReferencia != null
+      ? Math.max(0, Number(item.valorReferencia) - item.meta)
+      : item.meta
+  const totalPeso = itens.value.reduce((s, item) => s + peso(item), 0)
   if (totalPeso <= 0) return 0
-  return itens.value.reduce((s, item) => s + item.percentual * item.meta, 0) / totalPeso
+  return itens.value.reduce((s, item) => s + item.percentual * peso(item), 0) / totalPeso
 })
 
 const reducaoTotal = computed(() => itens.value.every((item) => item.reducao))
@@ -189,7 +190,7 @@ function onBotaoClick() {
       </div>
     </div>
 
-    <div class="card-progresso__corpo flex align-items-center gap-4 flex-wrap">
+    <div class="card-progresso__corpo flex align-items-center flex-wrap">
       <div v-if="formato === 'circular'" class="card-progresso__chart-wrap flex align-items-center justify-content-center">
         <div class="card-progresso__chart">
           <ChartBase type="doughnut" :data="chartData" :options="chartOptions" :height="height" />
@@ -210,14 +211,16 @@ function onBotaoClick() {
             <span class="card-progresso__item-rotulo inline-flex align-items-center gap-2" :style="{ color: palette.text }">
               <span class="nc-bolinha" :style="{ background: item.cor }"></span>
               <span>{{ item.rotulo }}</span>
+              <span v-if="item.reducao" class="card-progresso__item-modo" :style="{ color: palette.muted }">↓</span>
             </span>
-            <span v-if="mostrarValor || mostrarPercentual" class="card-progresso__item-valor inline-flex align-items-baseline gap-2"
-              :style="{ color: palette.text }">
+            <span v-if="mostrarValor || mostrarPercentual" class="card-progresso__item-valor inline-flex align-items-center gap-2">
               <template v-if="mostrarValor">
-                {{ formatar(item.quantidade) }}<span v-if="item.meta" :style="{ color: palette.muted }"> / {{ formatar(item.meta) }}</span><span v-if="item.reducao && item.valorReferencia != null" class="card-progresso__item-ref" :style="{ color: palette.muted }"> (ref: {{ formatar(item.valorReferencia) }})</span>
+                <span class="card-progresso__item-nums" :style="{ color: palette.muted }">
+                  {{ formatar(item.quantidade) }}<span v-if="item.meta"> / {{ formatar(item.meta) }}</span>
+                </span>
               </template>
               <span v-if="mostrarPercentual" class="card-progresso__item-pct"
-                :style="{ color: item.reducao ? props.corExcesso : palette.muted }">
+                :style="{ background: toRgba(item.cor, 0.12), color: item.cor }">
                 {{ Math.round(item.percentual) }}%
               </span>
             </span>
@@ -243,6 +246,7 @@ function onBotaoClick() {
 
 <style scoped>
 .card-progresso {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -260,7 +264,7 @@ function onBotaoClick() {
 
 .card-progresso__corpo {
   display: flex;
-  gap: 1.5rem;
+  gap: 3.5rem;
   align-items: stretch;
   flex: 1 1 auto;
   min-height: 0;
@@ -295,7 +299,8 @@ function onBotaoClick() {
 }
 
 .card-progresso__chart-wrap {
-  flex: 0 1 200px;
+  flex: 0 0 clamp(140px, 38%, 220px);
+  width: clamp(140px, 38%, 220px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -315,15 +320,17 @@ function onBotaoClick() {
   width: 100%;
 }
 
-@media (max-width: 640px) {
+@container (max-width: 520px) {
   .card-progresso { gap: 0.75rem; }
   .card-progresso__topo { flex-wrap: wrap; }
+
   .card-progresso--left .card-progresso__corpo,
   .card-progresso--right .card-progresso__corpo {
     flex-direction: column;
     align-items: stretch;
     flex-wrap: nowrap;
   }
+
   .card-progresso--left .card-progresso__chart-wrap,
   .card-progresso--right .card-progresso__chart-wrap {
     flex: 0 0 auto;
@@ -331,6 +338,7 @@ function onBotaoClick() {
     max-width: 240px;
     margin: 0 auto;
   }
+
   .nc-centro-titulo { font-size: 1.05rem; }
   .nc-centro-desc { font-size: 0.58rem; }
   .card-progresso__item-cab {
@@ -339,7 +347,7 @@ function onBotaoClick() {
   }
 }
 
-@media (max-width: 380px) {
+@container (max-width: 380px) {
   .card-progresso__item-cab {
     flex-wrap: wrap;
   }
@@ -389,20 +397,30 @@ function onBotaoClick() {
 
 .card-progresso__item-valor {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
 }
 
-.card-progresso__item-ref {
-  font-size: 0.72rem;
+.card-progresso__item-modo {
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.card-progresso__item-nums {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
   font-weight: 400;
 }
 
 .card-progresso__item-pct {
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .card-progresso__trilha {

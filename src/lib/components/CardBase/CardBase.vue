@@ -45,7 +45,7 @@ async function onExportar() {
 </script>
 
 <template>
-  <div ref="cardRef" class="card-base p-4 flex flex-column" :class="`card-base--${alinhamento}`" :style="cardStyle">
+  <div ref="cardRef" class="card-base flex flex-column" :class="`card-base--${alinhamento}`" :style="cardStyle">
     <div v-if="exportar" class="card-base__topo">
       <button type="button" class="nc-exportar card-base__exportar inline-flex align-items-center justify-content-center"
         :style="{ color: palette.muted, borderColor: toRgba(palette.text === 'inherit' ? '#0F172A' : palette.text, 0.18) }"
@@ -92,6 +92,7 @@ async function onExportar() {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  padding: 1.25rem;
   transition: background 0.2s ease;
   overflow: hidden;
   font-family: 'Geist', sans-serif;
