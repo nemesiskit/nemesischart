@@ -8,7 +8,7 @@ import ChartBase from './components/ChartBase/ChartBase.vue'
 
 export { ChartBase, CardBase, CardLinhas, CardPizza, CardBarra, CardPolar, CardProgresso }
 
-export { useTema, toRgba } from './composables/useTema.js'
+export { useTema, toRgba, gerarPaleta } from './composables/useTema.js'
 export { useFormatadorValor } from './composables/useFormatadorValor.js'
 export { criarTooltipEl, prepararTooltipParent, clampHorizontal } from './composables/useTooltipExterno.js'
 export { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from './composables/useExportarImagem.js'

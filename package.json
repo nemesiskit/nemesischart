@@ -1,6 +1,6 @@
 {
   "name": "nemesischart",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "private": false,
   "description": "Lib de componentes Vue 3 para charts usando Chart.js, PrimeVue e PrimeFlex",
   "type": "module",
