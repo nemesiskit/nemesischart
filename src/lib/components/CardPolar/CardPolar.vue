@@ -167,7 +167,7 @@ function onBotaoClick() {
 <template>
   <div ref="cardRef" class="card-polar p-4 flex flex-column" :class="layoutClass" :style="cardStyle">
     <div class="card-polar__topo flex align-items-start justify-content-between gap-3">
-      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-polar__legendas flex flex-column">
+      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="nc-legendas-flex flex flex-column">
         <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.95 }">
           <slot name="legenda">{{ legenda }}</slot>
         </div>
@@ -175,14 +175,14 @@ function onBotaoClick() {
           <slot name="sublegenda">{{ sublegenda }}</slot>
         </div>
       </div>
-      <div v-if="$slots.actions || botaoVisivel || exportar" class="card-polar__actions inline-flex align-items-center gap-2">
+      <div v-if="$slots.actions || botaoVisivel || exportar" class="nc-actions inline-flex align-items-center gap-2">
         <slot name="actions">
-          <button v-if="botaoVisivel" class="card-polar__btn inline-flex align-items-center"
+          <button v-if="botaoVisivel" class="nc-btn inline-flex align-items-center"
             :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }" @click="onBotaoClick">
             <span>{{ textoBotao }}</span>
           </button>
         </slot>
-        <button v-if="exportar" type="button" class="card-polar__exportar inline-flex align-items-center justify-content-center"
+        <button v-if="exportar" type="button" class="nc-exportar inline-flex align-items-center justify-content-center"
           :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
           title="Exportar como imagem" aria-label="Exportar como imagem"
           @click="onExportar" v-html="iconeExportar"></button>
@@ -190,19 +190,19 @@ function onBotaoClick() {
     </div>
 
     <div class="card-polar__corpo flex align-items-center gap-4">
-      <div class="card-polar__tabela flex flex-column">
-        <div v-if="mostrarCabecalho" class="card-polar__tabela-cab flex align-items-center justify-content-between"
+      <div class="nc-tabela flex flex-column">
+        <div v-if="mostrarCabecalho" class="nc-tabela-cab flex align-items-center justify-content-between"
           :style="{ color: palette.muted, borderColor: toRgba(palette.muted, 0.25) }">
           <span>{{ rotuloCategoria }}</span>
-          <span class="card-polar__tabela-valor">{{ rotuloQuantidade }}</span>
+          <span class="nc-tabela-valor">{{ rotuloQuantidade }}</span>
         </div>
-        <div v-for="(item, i) in data" :key="i" class="card-polar__tabela-linha flex align-items-center justify-content-between"
+        <div v-for="(item, i) in data" :key="i" class="nc-tabela-linha flex align-items-center justify-content-between"
           :style="{ color: palette.text }">
-          <span class="card-polar__tabela-rotulo inline-flex align-items-center gap-2">
-            <span class="card-polar__bolinha" :style="{ background: coresAplicadas[i] }"></span>
+          <span class="nc-tabela-rotulo inline-flex align-items-center gap-2">
+            <span class="nc-bolinha" :style="{ background: coresAplicadas[i] }"></span>
             <span>{{ item.rotulo }}</span>
           </span>
-          <span class="card-polar__tabela-valor">{{ formatar(item.quantidade) }}</span>
+          <span class="nc-tabela-valor">{{ formatar(item.quantidade) }}</span>
         </div>
       </div>
 
@@ -276,97 +276,6 @@ function onBotaoClick() {
   margin: 0 auto;
 }
 
-.card-polar__legendas {
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.card-polar__actions {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-polar__exportar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  font-family: inherit;
-}
-
-.card-polar__exportar:hover {
-  opacity: 0.7;
-}
-
-.card-polar__exportar :deep(svg) {
-  display: block;
-}
-
-.card-polar__tabela {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.card-polar__tabela-cab {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.72rem;
-  font-weight: 500;
-  padding: 0 0 0.5rem 0;
-  border-bottom: 1px solid;
-}
-
-.card-polar__tabela-linha {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.4rem 0;
-  font-size: 0.8rem;
-}
-
-.card-polar__tabela-rotulo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  min-width: 0;
-  flex: 1 1 0;
-  overflow: hidden;
-}
-
-.card-polar__tabela-rotulo > span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.card-polar__tabela-valor {
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  flex-shrink: 0;
-  white-space: nowrap;
-  padding-left: 0.5rem;
-}
-
-.card-polar__bolinha {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  flex: 0 0 auto;
-  display: inline-block;
-}
-
 .card-polar__chart-wrap {
   flex: 0 0 auto;
   display: flex;
@@ -396,26 +305,6 @@ function onBotaoClick() {
   margin-top: 0.15rem;
 }
 
-.card-polar__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 10px;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  align-self: flex-start;
-  font-family: inherit;
-}
-
-.card-polar__btn:hover {
-  opacity: 0.75;
-}
-
 @media (max-width: 640px) {
   .card-polar { gap: 0.75rem; }
   .card-polar__topo { flex-wrap: wrap; }
@@ -425,8 +314,8 @@ function onBotaoClick() {
     align-items: stretch;
     gap: 1rem;
   }
-  .card-polar--left .card-polar__tabela,
-  .card-polar--right .card-polar__tabela {
+  .card-polar--left .nc-tabela,
+  .card-polar--right .nc-tabela {
     width: 100%;
   }
   .card-polar__chart-wrap { width: 100%; }
@@ -437,11 +326,7 @@ function onBotaoClick() {
   }
   .card-polar__centro-titulo { font-size: 1rem; }
   .card-polar__centro-desc { font-size: 0.78rem; }
-  .card-polar__tabela-linha { font-size: 0.78rem; }
-  .card-polar__btn {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.82rem;
-  }
+  .nc-tabela-linha { font-size: 0.78rem; }
 }
 
 @media (max-width: 380px) {
@@ -451,5 +336,5 @@ function onBotaoClick() {
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+@import '../../styles/shared.css';
 </style>

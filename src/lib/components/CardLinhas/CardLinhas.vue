@@ -379,6 +379,9 @@ const chartOptions = computed(() => ({
       display: false,
       grid: { display: false },
       beginAtZero: true,
+      suggestedMax: linhasNormalizadas.value.length
+        ? Math.max(...linhasNormalizadas.value.map((l) => l.valor))
+        : undefined,
     },
   },
 }))
@@ -392,7 +395,7 @@ function onBotaoClick() {
   <div ref="cardRef" class="card-linhas p-4 flex" :class="layoutClass" :style="cardStyle">
     <div class="card-linhas__header flex flex-column">
       <div class="card-linhas__topo flex align-items-start justify-content-between gap-3">
-        <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-linhas__legendas flex flex-column">
+        <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="nc-legendas-flex flex flex-column">
           <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.85 }">
             <slot name="legenda">{{ legenda }}</slot>
           </div>
@@ -400,14 +403,14 @@ function onBotaoClick() {
             <slot name="sublegenda">{{ sublegenda }}</slot>
           </div>
         </div>
-        <div v-if="$slots.actions || botaoVisivel || exportar" class="card-linhas__actions inline-flex align-items-center gap-2">
+        <div v-if="$slots.actions || botaoVisivel || exportar" class="nc-actions inline-flex align-items-center gap-2">
           <slot name="actions">
-            <button v-if="botaoVisivel" class="card-linhas__btn inline-flex align-items-center" :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }"
+            <button v-if="botaoVisivel" class="nc-btn inline-flex align-items-center" :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }"
               @click="onBotaoClick">
               <span>{{ textoBotao }}</span>
             </button>
           </slot>
-          <button v-if="exportar" type="button" class="card-linhas__exportar inline-flex align-items-center justify-content-center"
+          <button v-if="exportar" type="button" class="nc-exportar inline-flex align-items-center justify-content-center"
             :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
             title="Exportar como imagem" aria-label="Exportar como imagem"
             @click="onExportar" v-html="iconeExportar"></button>
@@ -453,41 +456,6 @@ function onBotaoClick() {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-}
-
-.card-linhas__legendas {
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.card-linhas__actions {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-linhas__exportar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  font-family: inherit;
-}
-
-.card-linhas__exportar:hover {
-  opacity: 0.7;
-}
-
-.card-linhas__exportar :deep(svg) {
-  display: block;
 }
 
 .card-linhas__chart {
@@ -540,26 +508,6 @@ function onBotaoClick() {
   justify-content: center;
 }
 
-.card-linhas__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 10px;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  align-self: flex-start;
-  font-family: inherit;
-}
-
-.card-linhas__btn:hover {
-  opacity: 0.75;
-}
-
 @media (max-width: 640px) {
   .card-linhas { gap: 0.75rem; }
   .card-linhas__topo { flex-wrap: wrap; }
@@ -577,14 +525,9 @@ function onBotaoClick() {
     margin-left: 0;
     margin-right: 0;
   }
- 
-  .card-linhas__btn {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.82rem;
-  }
 }
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import '../../styles/shared.css';
 </style>

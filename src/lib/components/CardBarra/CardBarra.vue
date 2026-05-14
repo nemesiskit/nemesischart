@@ -67,6 +67,7 @@ const props = defineProps({
   linhasReferencia: { type: [Object, Array], default: null },
   exportar: { type: Boolean, default: false },
   nomeArquivoExport: { type: String, default: 'card-barra.png' },
+  corHover: { type: String, default: null },
 })
 
 const emit = defineEmits(['botaoAcao', 'exportado'])
@@ -135,7 +136,7 @@ const chartData = computed(() => {
       label: s.nome,
       data: s.dados.map((d) => d.quantidade),
       backgroundColor: toRgba(s.cor, 0.72),
-      hoverBackgroundColor: s.cor,
+      hoverBackgroundColor: props.corHover || s.cor,
       borderWidth: 0,
       borderRadius: raioSegmento(i),
       borderSkipped: false,
@@ -237,6 +238,9 @@ const chartOptions = computed(() => {
     grid: { display: false },
     beginAtZero: true,
     stacked: props.empilhado,
+    suggestedMax: linhasNormalizadas.value.length
+      ? Math.max(...linhasNormalizadas.value.map((l) => l.valor))
+      : undefined,
   }
   return {
     responsive: true,
@@ -489,7 +493,7 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
     <div class="card-barra__header flex flex-column">
       <div class="card-barra__topo flex align-items-start justify-content-between gap-3">
         <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda"
-          class="card-barra__legendas flex flex-column">
+          class="nc-legendas-flex flex flex-column">
           <div v-if="$slots.legenda || legenda" class="text-xs font-medium"
             :style="{ color: palette.text, opacity: 0.85 }">
             <slot name="legenda">{{ legenda }}</slot>
@@ -499,15 +503,15 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
           </div>
         </div>
         <div v-if="$slots.actions || botaoVisivel || exportar"
-          class="card-barra__actions inline-flex align-items-center gap-2">
+          class="nc-actions inline-flex align-items-center gap-2">
           <slot name="actions">
-            <button v-if="botaoVisivel" class="card-barra__btn inline-flex align-items-center"
+            <button v-if="botaoVisivel" class="nc-btn inline-flex align-items-center"
               :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }" @click="onBotaoClick">
               <span>{{ textoBotao }}</span>
             </button>
           </slot>
           <button v-if="exportar" type="button"
-            class="card-barra__exportar inline-flex align-items-center justify-content-center"
+            class="nc-exportar inline-flex align-items-center justify-content-center"
             :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }" title="Exportar como imagem"
             aria-label="Exportar como imagem" @click="onExportar" v-html="iconeExportar"></button>
         </div>
@@ -553,41 +557,6 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-}
-
-.card-barra__legendas {
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.card-barra__actions {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-barra__exportar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  font-family: inherit;
-}
-
-.card-barra__exportar:hover {
-  opacity: 0.7;
-}
-
-.card-barra__exportar :deep(svg) {
-  display: block;
 }
 
 .card-barra__chart {
@@ -638,27 +607,8 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
   justify-content: center;
 }
 
-.card-barra__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 10px;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  align-self: flex-start;
-  font-family: inherit;
-}
-
-.card-barra__btn:hover {
-  opacity: 0.75;
-}
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import '../../styles/shared.css';
 </style>

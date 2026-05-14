@@ -21,6 +21,7 @@ const props = defineProps({
     default: () => ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899'],
   },
   corDetalhes: { type: String, default: '#3B82F6' },
+  corExcesso: { type: String, default: '#EF4444' },
   textoBotao: { type: String, default: 'Ver mais' },
   botaoVisivel: { type: Boolean, default: false },
   direcao: {
@@ -82,8 +83,20 @@ const itens = computed(() =>
     const meta = Number(d.meta ?? props.metaPadrao) || 0
     const quantidade = Number(d.quantidade) || 0
     const cor = d.cor || props.cores[i % props.cores.length]
-    const percentual = meta > 0 ? Math.max(0, Math.min(100, (quantidade / meta) * 100)) : 0
-    return { rotulo: d.rotulo, quantidade, meta, cor, percentual }
+    const isReducao = d.modo === 'reducao'
+
+    let percentual
+    if (isReducao) {
+      const valorRef = Number(d.valor_referencia) || 0
+      const range = valorRef - meta
+      percentual = range > 0
+        ? Math.max(0, Math.min(100, ((valorRef - quantidade) / range) * 100))
+        : 0
+    } else {
+      percentual = meta > 0 ? Math.max(0, Math.min(100, (quantidade / meta) * 100)) : 0
+    }
+
+    return { rotulo: d.rotulo, quantidade, meta, valorReferencia: d.valor_referencia ?? null, cor, percentual, reducao: isReducao }
   })
 )
 
@@ -97,18 +110,23 @@ const raioBarraCss = computed(() =>
 const totalQuantidade = computed(() => itens.value.reduce((s, i) => s + i.quantidade, 0))
 const totalMeta = computed(() => itens.value.reduce((s, i) => s + i.meta, 0))
 const percentualTotal = computed(() => {
-  if (totalMeta.value <= 0) return 0
-  return Math.max(0, Math.min(100, (totalQuantidade.value / totalMeta.value) * 100))
+  if (!itens.value.length) return 0
+  const totalPeso = itens.value.reduce((s, item) => s + item.meta, 0)
+  if (totalPeso <= 0) return 0
+  return itens.value.reduce((s, item) => s + item.percentual * item.meta, 0) / totalPeso
 })
 
+const reducaoTotal = computed(() => itens.value.every((item) => item.reducao))
+
 const chartData = computed(() => {
-  const restante = Math.max(0, 100 - percentualTotal.value)
-  const cor = props.corDetalhes
+  const pct = Math.min(percentualTotal.value, 100)
+  const restante = Math.max(0, 100 - pct)
+  const cor = reducaoTotal.value ? props.corExcesso : props.corDetalhes
   return {
     labels: ['Progresso', 'Restante'],
     datasets: [
       {
-        data: [percentualTotal.value, restante],
+        data: [pct, restante],
         backgroundColor: [cor, toRgba(palette.value.muted, 0.15)],
         borderWidth: 0,
         borderColor: 'transparent',
@@ -140,7 +158,7 @@ function onBotaoClick() {
 <template>
   <div ref="cardRef" class="card-progresso p-4 flex flex-column" :class="layoutClass" :style="cardStyle">
     <div class="card-progresso__topo flex align-items-start justify-content-between gap-3">
-      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-progresso__legendas flex flex-column">
+      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="nc-legendas-flex flex flex-column">
         <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.95 }">
           <slot name="legenda">{{ legenda }}</slot>
         </div>
@@ -148,14 +166,14 @@ function onBotaoClick() {
           <slot name="sublegenda">{{ sublegenda }}</slot>
         </div>
       </div>
-      <div v-if="$slots.actions || botaoVisivel || exportar" class="card-progresso__actions inline-flex align-items-center gap-2">
+      <div v-if="$slots.actions || botaoVisivel || exportar" class="nc-actions inline-flex align-items-center gap-2">
         <slot name="actions">
-          <button v-if="botaoVisivel" class="card-progresso__btn inline-flex align-items-center"
+          <button v-if="botaoVisivel" class="nc-btn inline-flex align-items-center"
             :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }" @click="onBotaoClick">
             <span>{{ textoBotao }}</span>
           </button>
         </slot>
-        <button v-if="exportar" type="button" class="card-progresso__exportar inline-flex align-items-center justify-content-center"
+        <button v-if="exportar" type="button" class="nc-exportar inline-flex align-items-center justify-content-center"
           :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
           title="Exportar como imagem" aria-label="Exportar como imagem"
           @click="onExportar" v-html="iconeExportar"></button>
@@ -175,11 +193,11 @@ function onBotaoClick() {
       <div v-if="formato === 'circular'" class="card-progresso__chart-wrap flex align-items-center justify-content-center">
         <div class="card-progresso__chart">
           <ChartBase type="doughnut" :data="chartData" :options="chartOptions" :height="height" />
-          <div class="card-progresso__centro flex flex-column align-items-center justify-content-center">
-            <div class="card-progresso__centro-valor" :style="{ color: palette.text }">
+          <div class="nc-centro flex flex-column align-items-center justify-content-center">
+            <div class="nc-centro-titulo" :style="{ color: reducaoTotal ? props.corExcesso : palette.text }">
               {{ Math.round(percentualTotal) }}%
             </div>
-            <div class="card-progresso__centro-desc" :style="{ color: palette.muted }">
+            <div class="nc-centro-desc" :style="{ color: palette.muted }">
               {{ formatar(totalQuantidade) }} / {{ formatar(totalMeta) }}
             </div>
           </div>
@@ -190,19 +208,26 @@ function onBotaoClick() {
         <div v-for="(item, i) in itens" :key="i" class="card-progresso__item flex flex-column">
           <div class="card-progresso__item-cab flex align-items-center justify-content-between">
             <span class="card-progresso__item-rotulo inline-flex align-items-center gap-2" :style="{ color: palette.text }">
-              <span class="card-progresso__bolinha" :style="{ background: item.cor }"></span>
+              <span class="nc-bolinha" :style="{ background: item.cor }"></span>
               <span>{{ item.rotulo }}</span>
             </span>
             <span v-if="mostrarValor || mostrarPercentual" class="card-progresso__item-valor inline-flex align-items-baseline gap-2"
               :style="{ color: palette.text }">
-              <template v-if="mostrarValor">{{ formatar(item.quantidade) }}<span v-if="item.meta" :style="{ color: palette.muted }"> / {{ formatar(item.meta) }}</span></template>
-              <span v-if="mostrarPercentual" class="card-progresso__item-pct" :style="{ color: palette.muted }">
+              <template v-if="mostrarValor">
+                {{ formatar(item.quantidade) }}<span v-if="item.meta" :style="{ color: palette.muted }"> / {{ formatar(item.meta) }}</span><span v-if="item.reducao && item.valorReferencia != null" class="card-progresso__item-ref" :style="{ color: palette.muted }"> (ref: {{ formatar(item.valorReferencia) }})</span>
+              </template>
+              <span v-if="mostrarPercentual" class="card-progresso__item-pct"
+                :style="{ color: item.reducao ? props.corExcesso : palette.muted }">
                 {{ Math.round(item.percentual) }}%
               </span>
             </span>
           </div>
           <div class="card-progresso__trilha w-full"
-            :style="{ height: alturaBarraCss, borderRadius: raioBarraCss, background: toRgba(palette.muted, 0.15) }">
+            :style="{
+              height: alturaBarraCss,
+              borderRadius: raioBarraCss,
+              background: item.reducao ? toRgba(props.corExcesso, 0.18) : toRgba(palette.muted, 0.15),
+            }">
             <div class="card-progresso__preenchimento"
               :style="{ width: item.percentual + '%', background: item.cor, borderRadius: raioBarraCss }"></div>
           </div>
@@ -233,41 +258,6 @@ function onBotaoClick() {
   gap: 1rem;
 }
 
-.card-progresso__legendas {
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.card-progresso__actions {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-progresso__exportar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  font-family: inherit;
-}
-
-.card-progresso__exportar:hover {
-  opacity: 0.7;
-}
-
-.card-progresso__exportar :deep(svg) {
-  display: block;
-}
-
 .card-progresso__corpo {
   display: flex;
   gap: 1.5rem;
@@ -291,10 +281,12 @@ function onBotaoClick() {
 
 .card-progresso--right .card-progresso__corpo {
   flex-direction: row-reverse;
+  flex-wrap: nowrap;
 }
 
 .card-progresso--left .card-progresso__corpo {
   flex-direction: row;
+  flex-wrap: nowrap;
 }
 
 .card-progresso--left .card-progresso__chart-wrap,
@@ -339,15 +331,11 @@ function onBotaoClick() {
     max-width: 240px;
     margin: 0 auto;
   }
-  .card-progresso__centro-valor { font-size: 1.05rem; }
-  .card-progresso__centro-desc { font-size: 0.58rem; }
+  .nc-centro-titulo { font-size: 1.05rem; }
+  .nc-centro-desc { font-size: 0.58rem; }
   .card-progresso__item-cab {
     font-size: 0.78rem;
     gap: 0.5rem;
-  }
-  .card-progresso__btn {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.82rem;
   }
 }
 
@@ -357,30 +345,7 @@ function onBotaoClick() {
   }
 }
 
-.card-progresso__centro {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  pointer-events: none;
-  padding: 0 1rem;
-}
-
-.card-progresso__centro-valor {
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-}
-
-.card-progresso__centro-desc {
-  font-size: 0.6rem;
-  line-height: 1.3;
-  max-width: 80px;
-  margin-top: 0.15rem;
+.nc-centro-desc {
   font-variant-numeric: tabular-nums;
 }
 
@@ -395,7 +360,9 @@ function onBotaoClick() {
 
 .card-progresso--left .card-progresso__lista,
 .card-progresso--right .card-progresso__lista {
-  width: auto;
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
 }
 
 .card-progresso__item {
@@ -428,17 +395,14 @@ function onBotaoClick() {
   font-weight: 500;
 }
 
+.card-progresso__item-ref {
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
 .card-progresso__item-pct {
   font-size: 0.72rem;
   font-weight: 500;
-}
-
-.card-progresso__bolinha {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  flex: 0 0 auto;
-  display: inline-block;
 }
 
 .card-progresso__trilha {
@@ -452,27 +416,8 @@ function onBotaoClick() {
   transition: width 0.4s ease;
 }
 
-.card-progresso__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 10px;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  align-self: flex-start;
-  font-family: inherit;
-}
-
-.card-progresso__btn:hover {
-  opacity: 0.75;
-}
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import '../../styles/shared.css';
 </style>

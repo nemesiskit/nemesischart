@@ -47,14 +47,14 @@ async function onExportar() {
 <template>
   <div ref="cardRef" class="card-base p-4 flex flex-column" :class="`card-base--${alinhamento}`" :style="cardStyle">
     <div v-if="exportar" class="card-base__topo">
-      <button type="button" class="card-base__exportar inline-flex align-items-center justify-content-center"
+      <button type="button" class="nc-exportar card-base__exportar inline-flex align-items-center justify-content-center"
         :style="{ color: palette.muted, borderColor: toRgba(palette.text === 'inherit' ? '#0F172A' : palette.text, 0.18) }"
         title="Exportar como imagem" aria-label="Exportar como imagem"
         @click="onExportar" v-html="iconeExportar"></button>
     </div>
 
     <div class="card-base__legendas flex flex-column">
-      <div v-if="$slots.legenda || legenda" class="card-base__legenda text-xs" :style="{ color: palette.text }">
+      <div v-if="$slots.legenda || legenda" class="card-base__legenda font-medium text-xs" :style="{ color: palette.text }">
         <slot name="legenda">{{ legenda }}</slot>
       </div>
       <div v-if="$slots.sublegenda || sublegenda" class="card-base__sublegenda text-xs" :style="{ color: palette.muted }">
@@ -115,8 +115,6 @@ async function onExportar() {
 }
 
 .card-base__legenda {
-  font-size: 0.82rem;
-  font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.005em;
 }
@@ -138,6 +136,7 @@ async function onExportar() {
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.015em;
+  word-break: break-word;
 }
 
 
@@ -174,26 +173,8 @@ async function onExportar() {
 }
 
 .card-base__exportar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 28px;
   height: 28px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  font-family: inherit;
-}
-
-.card-base__exportar:hover {
-  opacity: 0.7;
-}
-
-.card-base__exportar :deep(svg) {
-  display: block;
 }
 
 .card-base__footer {
@@ -202,5 +183,5 @@ async function onExportar() {
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+@import '../../styles/shared.css';
 </style>

@@ -102,7 +102,7 @@ Variações específicas por componente:
 
 | Componente | Extras |
 |---|---|
-| `CardProgresso` | cada item pode ter `meta` (number), senão usa `metaPadrao`. |
+| `CardProgresso` | `meta`, `modo`, `valor_referencia`, `cor` por item. Ver seção [CardProgresso](#cardprogresso). |
 | `CardLinhas` / `CardBarra` | aceitam `series: [{ nome, data: [...], cor? }]` para múltiplas séries. |
 
 ---
@@ -197,29 +197,49 @@ Polar area com grid configurável.
 
 ### CardProgresso
 
-Barras de progresso lineares ou circulares com meta.
+Barras de progresso lineares ou circulares. Suporta metas de **crescimento** e de **redução** por item.
 
 ```vue
 <CardProgresso
   legenda="Metas"
-  titulo="72%"
   formato="linear"
   :data="[
     { rotulo: 'Vendas', quantidade: 72, meta: 100 },
-    { rotulo: 'Serviços', quantidade: 48, meta: 80 },
+    { rotulo: 'Reclamações', quantidade: 320, meta: 100, valor_referencia: 500, modo: 'reducao' },
   ]"
 />
 ```
 
-| Prop | Tipo | Padrão |
-|---|---|---|
-| `formato` | `linear` \| `circular` | `linear` |
-| `metaPadrao` | Number | `100` |
-| `mostrarValor` | Boolean | `true` |
-| `mostrarPercentual` | Boolean | `true` |
-| `alturaBarra` | Number/String | `8` |
-| `raioBarra` | String/Number | `'999px'` |
-| `cutout` | String/Number | `'78%'` |
+#### Estrutura do `data`
+
+| Campo | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| `rotulo` | String | sim | Label exibido. |
+| `quantidade` | Number | sim | Valor atual. |
+| `meta` | Number | não | Valor alvo. Usa `metaPadrao` se omitido. |
+| `modo` | `'crescimento'` \| `'reducao'` | não | Omitir = `'crescimento'`. |
+| `valor_referencia` | Number | não (obrigatório em `reducao`) | Ponto de partida para metas de redução (equivale a 0% de progresso). |
+| `cor` | String | não | Cor hex da barra, sobrescreve a paleta automática. |
+
+**Modo crescimento** — percentual = `quantidade / meta`. A barra cresce em direção à meta.
+
+**Modo redução** — percentual = `(valor_referencia − quantidade) / (valor_referencia − meta)`. A barra representa o progresso de redução; o fundo da trilha usa `corExcesso`.
+
+#### Props específicas
+
+| Prop | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| `formato` | `linear` \| `circular` | `linear` | Exibe barras ou gráfico de rosca. |
+| `direcao` | `top` \| `bottom` \| `left` \| `right` | `top` | Posição do gráfico circular em relação à lista. |
+| `metaPadrao` | Number | `100` | Meta aplicada a itens sem `meta`. |
+| `mostrarValor` | Boolean | `true` | Exibe `quantidade / meta`. |
+| `mostrarPercentual` | Boolean | `true` | Exibe o percentual de progresso. |
+| `alturaBarra` | Number/String | `8` | Altura das barras em px. |
+| `raioBarra` | String/Number | `'999px'` | Border-radius das barras. |
+| `cutout` | String/Number | `'78%'` | Espessura do anel no modo circular. |
+| `corDetalhes` | String | `'#3B82F6'` | Cor do gráfico circular em modo crescimento. |
+| `corExcesso` | String | `'#EF4444'` | Cor de alerta usada em itens com modo `reducao`. |
+| `cores` | Array&lt;String&gt; | paleta padrão | Cores automáticas dos itens. |
 
 ### CardBase
 

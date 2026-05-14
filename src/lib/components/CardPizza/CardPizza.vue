@@ -156,7 +156,7 @@ const iconeExportar = ICONE_EXPORTAR_SVG
 <template>
   <div ref="cardRef" class="card-pizza p-4 flex flex-column" :class="layoutClass" :style="cardStyle">
     <div class="card-pizza__topo flex align-items-start justify-content-between gap-3">
-      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="card-pizza__legendas flex flex-column">
+      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="nc-legendas-flex flex flex-column">
         <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.95 }">
           <slot name="legenda">{{ legenda }}</slot>
         </div>
@@ -164,14 +164,14 @@ const iconeExportar = ICONE_EXPORTAR_SVG
           <slot name="sublegenda">{{ sublegenda }}</slot>
         </div>
       </div>
-      <div v-if="$slots.actions || botaoVisivel || exportar" class="card-pizza__actions inline-flex align-items-center gap-2">
+      <div v-if="$slots.actions || botaoVisivel || exportar" class="nc-actions inline-flex align-items-center gap-2">
         <slot name="actions">
-          <button v-if="botaoVisivel" class="card-pizza__btn inline-flex align-items-center"
+          <button v-if="botaoVisivel" class="nc-btn inline-flex align-items-center"
             :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }" @click="onBotaoClick">
             <span>{{ textoBotao }}</span>
           </button>
         </slot>
-        <button v-if="exportar" type="button" class="card-pizza__exportar inline-flex align-items-center justify-content-center"
+        <button v-if="exportar" type="button" class="nc-exportar inline-flex align-items-center justify-content-center"
           :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
           title="Exportar como imagem" aria-label="Exportar como imagem"
           @click="onExportar" v-html="iconeExportar"></button>
@@ -179,30 +179,30 @@ const iconeExportar = ICONE_EXPORTAR_SVG
     </div>
 
     <div class="card-pizza__corpo flex align-items-center gap-4">
-      <div class="card-pizza__tabela flex flex-column">
-        <div v-if="mostrarCabecalho" class="card-pizza__tabela-cab flex align-items-center justify-content-between"
+      <div class="nc-tabela flex flex-column">
+        <div v-if="mostrarCabecalho" class="nc-tabela-cab flex align-items-center justify-content-between"
           :style="{ color: palette.muted, borderColor: toRgba(palette.muted, 0.25) }">
           <span>{{ rotuloCategoria }}</span>
-          <span class="card-pizza__tabela-valor">{{ rotuloQuantidade }}</span>
+          <span class="nc-tabela-valor">{{ rotuloQuantidade }}</span>
         </div>
-        <div v-for="(item, i) in data" :key="i" class="card-pizza__tabela-linha flex align-items-center justify-content-between"
+        <div v-for="(item, i) in data" :key="i" class="nc-tabela-linha flex align-items-center justify-content-between"
           :style="{ color: palette.text }">
-          <span class="card-pizza__tabela-rotulo inline-flex align-items-center gap-2">
-            <span class="card-pizza__bolinha" :style="{ background: coresAplicadas[i] }"></span>
+          <span class="nc-tabela-rotulo inline-flex align-items-center gap-2">
+            <span class="nc-bolinha" :style="{ background: coresAplicadas[i] }"></span>
             <span>{{ item.rotulo }}</span>
           </span>
-          <span class="card-pizza__tabela-valor">{{ formatar(item.quantidade) }}</span>
+          <span class="nc-tabela-valor">{{ formatar(item.quantidade) }}</span>
         </div>
       </div>
 
       <div class="card-pizza__chart-wrap flex align-items-center justify-content-center">
         <div class="card-pizza__chart">
           <ChartBase type="doughnut" :data="chartData" :options="chartOptions" :height="height" />
-          <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-pizza__centro flex flex-column align-items-center justify-content-center">
-            <div v-if="$slots.titulo || titulo" class="card-pizza__centro-titulo m-0 font-semibold" :style="{ color: palette.text }">
+          <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="nc-centro flex flex-column align-items-center justify-content-center">
+            <div v-if="$slots.titulo || titulo" class="nc-centro-titulo m-0 font-semibold" :style="{ color: palette.text }">
               <slot name="titulo">{{ titulo }}</slot>
             </div>
-            <div v-if="$slots.descricao || descricao" class="card-pizza__centro-desc" :style="{ color: palette.muted }">
+            <div v-if="$slots.descricao || descricao" class="nc-centro-desc" :style="{ color: palette.muted }">
               <slot name="descricao">{{ descricao }}</slot>
             </div>
           </div>
@@ -265,97 +265,6 @@ const iconeExportar = ICONE_EXPORTAR_SVG
   margin: 0 auto;
 }
 
-.card-pizza__legendas {
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.card-pizza__actions {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-pizza__exportar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  font-family: inherit;
-}
-
-.card-pizza__exportar:hover {
-  opacity: 0.7;
-}
-
-.card-pizza__exportar :deep(svg) {
-  display: block;
-}
-
-.card-pizza__tabela {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.card-pizza__tabela-cab {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.72rem;
-  font-weight: 500;
-  padding: 0 0 0.5rem 0;
-  border-bottom: 1px solid;
-}
-
-.card-pizza__tabela-linha {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.4rem 0;
-  font-size: 0.8rem;
-}
-
-.card-pizza__tabela-rotulo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  min-width: 0;
-  flex: 1 1 0;
-  overflow: hidden;
-}
-
-.card-pizza__tabela-rotulo > span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.card-pizza__tabela-valor {
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  flex-shrink: 0;
-  white-space: nowrap;
-  padding-left: 0.5rem;
-}
-
-.card-pizza__bolinha {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  flex: 0 0 auto;
-  display: inline-block;
-}
-
 .card-pizza__chart-wrap {
   flex: 0 0 auto;
   display: flex;
@@ -369,53 +278,6 @@ const iconeExportar = ICONE_EXPORTAR_SVG
   min-width: 220px;
 }
 
-.card-pizza__centro {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  pointer-events: none;
-  padding: 0 1rem;
-}
-
-.card-pizza__centro-titulo {
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-}
-
-.card-pizza__centro-desc {
-  font-size: 0.6rem;
-  line-height: 1.3;
-  max-width: 80px;
-  text-align: center;
-  margin-top: 0.15rem;
-}
-
-.card-pizza__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  border-radius: 10px;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  align-self: flex-start;
-  font-family: inherit;
-}
-
-.card-pizza__btn:hover {
-  opacity: 0.75;
-}
-
 @media (max-width: 640px) {
   .card-pizza { gap: 0.75rem; }
   .card-pizza__topo { flex-wrap: wrap; }
@@ -425,8 +287,8 @@ const iconeExportar = ICONE_EXPORTAR_SVG
     align-items: stretch;
     gap: 1rem;
   }
-  .card-pizza--left .card-pizza__tabela,
-  .card-pizza--right .card-pizza__tabela {
+  .card-pizza--left .nc-tabela,
+  .card-pizza--right .nc-tabela {
     width: 100%;
   }
   .card-pizza__chart-wrap { width: 100%; }
@@ -435,21 +297,17 @@ const iconeExportar = ICONE_EXPORTAR_SVG
     min-width: 0;
     margin: 0 auto;
   }
-  .card-pizza__centro-titulo { font-size: 1.05rem; }
-  .card-pizza__centro-desc { font-size: 0.58rem; }
-  .card-pizza__tabela-linha { font-size: 0.78rem; }
-  .card-pizza__btn {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.82rem;
-  }
+  .nc-centro-titulo { font-size: 1.05rem; }
+  .nc-centro-desc { font-size: 0.58rem; }
+  .nc-tabela-linha { font-size: 0.78rem; }
 }
 
 @media (max-width: 380px) {
   .card-pizza__chart { max-width: 220px; }
-  .card-pizza__centro-titulo { font-size: 0.9rem; }
+  .nc-centro-titulo { font-size: 0.9rem; }
 }
 </style>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+@import '../../styles/shared.css';
 </style>

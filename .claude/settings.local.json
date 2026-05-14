@@ -16,7 +16,8 @@
       "Bash(npm view *)",
       "Bash(npm whoami *)",
       "Bash(npm publish *)",
-      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\neemi\\\\Documents\\\\GitHub\\\\nemesischart\" -Name | Where-Object { $_ -notmatch \"^node_modules\" })"
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\neemi\\\\Documents\\\\GitHub\\\\nemesischart\" -Name | Where-Object { $_ -notmatch \"^node_modules\" })",
+      "PowerShell(npm run build:lib 2>&1)"
     ]
   }
 }
