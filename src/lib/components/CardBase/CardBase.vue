@@ -137,7 +137,6 @@ async function onExportar() {
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.015em;
-  word-break: break-word;
 }
 
 

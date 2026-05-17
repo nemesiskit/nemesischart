@@ -240,7 +240,7 @@ const pluginLinhaReferencia = {
   },
 }
 
-const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLinhaReferencia] : []))
+const pluginsChart = [pluginLinhaReferencia]
 
 const chartData = computed(() => ({
   labels: props.data.map((d) => d.rotulo),

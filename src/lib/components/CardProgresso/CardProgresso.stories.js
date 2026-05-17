@@ -54,7 +54,7 @@ export default {
 - **quantidade** *(number)* — valor atual
 - **meta** *(number)* — valor alvo
 - **valor_referencia** *(number, opcional)* — ponto de partida para modo \`reducao\` (equivale a 0% de progresso)
-- **modo** *('crescimento' | 'reducao', opcional)* — define o comportamento do item; omitir equivale a \`'crescimento'\`
+- **modo** *('crescimento' | 'reducao', opcional)* — define o comportamento do item; omitir equivale a \`'crescimento'\`. Itens em modo redução exibem uma seta ↓ com tooltip explicativo ao passar o mouse.
 - **cor** *(string, opcional)* — cor hex da barra deste item`,
     },
     metaPadrao: {
@@ -94,7 +94,7 @@ export default {
 
     // Gráfico circular
     height: { control: { type: 'number' }, description: 'Altura do gráfico circular em px.' },
-    cutout: { control: { type: 'text' }, description: 'Espessura do anel do gráfico de rosca (ex: `78%`).' },
+    cutout: { control: { type: 'text' }, description: 'Espessura do anel do gráfico de rosca (ex: `78%`). O percentual central exibido é a média simples dos percentuais individuais de cada item.' },
 
     // Ações
     botaoVisivel: { control: { type: 'boolean' }, description: 'Exibe o botão de ação no topo do card.' },
@@ -195,6 +195,22 @@ export const MetaReducaoCircular = {
     formato: 'circular',
     direcao: 'left',
     titulo: 'Redução',
+    data: reducaoData,
+  },
+}
+
+export const TooltipReducao = {
+  name: 'Tooltip de Redução',
+  parameters: {
+    docs: {
+      description: {
+        story: 'Itens com `modo: "reducao"` exibem uma seta ↓ ao lado do rótulo. Ao passar o mouse sobre ela, um tooltip customizado explica o comportamento do modo redução.',
+      },
+    },
+  },
+  args: {
+    legenda: 'Passe o mouse sobre o ↓',
+    sublegenda: 'tooltip de modo redução',
     data: reducaoData,
   },
 }

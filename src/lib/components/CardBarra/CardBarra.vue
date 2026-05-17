@@ -87,6 +87,10 @@ async function onExportar() {
 
 const layoutClass = computed(() => `card-barra--${props.direcao}`)
 
+const heightCss = computed(() =>
+  typeof props.height === 'number' ? `${props.height}px` : props.height
+)
+
 const isHorizontal = computed(() => props.orientacao === 'horizontal')
 
 const seriesNormalizadas = computed(() => {
@@ -545,7 +549,7 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
     </div>
 
     <div class="card-barra__chart flex-1">
-      <ChartBase type="bar" :data="chartData" :options="chartOptions" :plugins="pluginsChart" :height="height" />
+      <ChartBase type="bar" :data="chartData" :options="chartOptions" :plugins="pluginsChart" height="100%" />
     </div>
 
     <div v-if="$slots.footer" class="card-barra__footer mt-3">
@@ -578,15 +582,17 @@ const pluginsChart = computed(() => (linhasNormalizadas.value.length ? [pluginLi
 .card-barra__chart {
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 0;
+  min-height: v-bind(heightCss);
 }
 
 .card-barra--top {
   flex-direction: column;
+  align-items: stretch;
 }
 
 .card-barra--bottom {
   flex-direction: column-reverse;
+  align-items: stretch;
 }
 
 .card-barra--top .card-barra__chart,

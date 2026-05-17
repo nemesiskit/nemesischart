@@ -4,6 +4,7 @@ import ChartBase from '../ChartBase/ChartBase.vue'
 import { useTema, toRgba, gerarPaleta } from '../../composables/useTema.js'
 import { useFormatadorValor } from '../../composables/useFormatadorValor.js'
 import { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from '../../composables/useExportarImagem.js'
+import { criarTooltipEl, clampHorizontal } from '../../composables/useTooltipExterno.js'
 
 const props = defineProps({
   legenda: { type: String, default: null },
@@ -108,13 +109,7 @@ const totalQuantidade = computed(() => itens.value.reduce((s, i) => s + i.quanti
 const totalMeta = computed(() => itens.value.reduce((s, i) => s + i.meta, 0))
 const percentualTotal = computed(() => {
   if (!itens.value.length) return 0
-  const peso = (item) =>
-    item.reducao && item.valorReferencia != null
-      ? Math.max(0, Number(item.valorReferencia) - item.meta)
-      : item.meta
-  const totalPeso = itens.value.reduce((s, item) => s + peso(item), 0)
-  if (totalPeso <= 0) return 0
-  return itens.value.reduce((s, item) => s + item.percentual * peso(item), 0) / totalPeso
+  return itens.value.reduce((s, item) => s + item.percentual, 0) / itens.value.length
 })
 
 const reducaoTotal = computed(() => itens.value.every((item) => item.reducao))
@@ -150,6 +145,56 @@ const chartOptions = computed(() => ({
     tooltip: { enabled: false },
   },
 }))
+
+function mostrarTooltipReducao(event) {
+  const parent = cardRef.value
+  if (!parent) return
+  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative'
+
+  const el = criarTooltipEl(parent)
+  el.style.whiteSpace = 'normal'
+
+  const content = el.querySelector('.nc-tt__content')
+  content.innerHTML =
+    `<span style="font-size:11px;color:#0F172A;display:block;max-width:140px;line-height:1.5;">` +
+      `<strong>Modo Redução</strong>: o progresso aumenta conforme o valor diminui` +
+    `</span>`
+
+  el.style.opacity = '1'
+  el.style.visibility = 'hidden'
+  el.style.left = '0px'
+  el.style.top = '0px'
+
+  const ttWidth = el.offsetWidth
+  const rect = event.currentTarget.getBoundingClientRect()
+  const parentRect = parent.getBoundingClientRect()
+
+  const centerX = rect.left - parentRect.left + rect.width / 2
+  const topY = rect.top - parentRect.top
+
+  el.style.transform = 'translate(-50%, calc(-100% - 8px))'
+
+  const caret = el.querySelector('.nc-tt__caret')
+  if (caret) {
+    Object.assign(caret.style, {
+      top: '',
+      bottom: '-5px',
+      borderLeft: '',
+      borderTop: '',
+      borderRight: '1px solid rgba(15,23,42,.06)',
+      borderBottom: '1px solid rgba(15,23,42,.06)',
+    })
+  }
+
+  el.style.left = centerX + 'px'
+  el.style.top = topY + 'px'
+  el.style.visibility = 'visible'
+}
+
+function ocultarTooltipReducao() {
+  const el = cardRef.value?.querySelector('.nc-tt')
+  if (el) el.style.opacity = '0'
+}
 
 function onBotaoClick() {
   emit('botaoAcao')
@@ -198,9 +243,6 @@ function onBotaoClick() {
             <div class="nc-centro-titulo" :style="{ color: reducaoTotal ? props.corExcesso : palette.text }">
               {{ Math.round(percentualTotal) }}%
             </div>
-            <div class="nc-centro-desc" :style="{ color: palette.muted }">
-              {{ formatar(totalQuantidade) }} / {{ formatar(totalMeta) }}
-            </div>
           </div>
         </div>
       </div>
@@ -211,7 +253,7 @@ function onBotaoClick() {
             <span class="card-progresso__item-rotulo inline-flex align-items-center gap-2" :style="{ color: palette.text }">
               <span class="nc-bolinha" :style="{ background: item.cor }"></span>
               <span>{{ item.rotulo }}</span>
-              <span v-if="item.reducao" class="card-progresso__item-modo" :style="{ color: palette.muted }">↓</span>
+              <span v-if="item.reducao" class="card-progresso__item-modo" :style="{ color: palette.muted }" @mouseenter="mostrarTooltipReducao" @mouseleave="ocultarTooltipReducao">↓</span>
             </span>
             <span v-if="mostrarValor || mostrarPercentual" class="card-progresso__item-valor inline-flex align-items-center gap-2">
               <template v-if="mostrarValor">
@@ -353,7 +395,9 @@ function onBotaoClick() {
   }
 }
 
-.nc-centro-desc {
+.nc-centro-titulo {
+  font-size: 1.6rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 

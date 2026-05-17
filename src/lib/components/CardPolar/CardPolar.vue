@@ -116,12 +116,31 @@ function externalTooltip(context) {
   const ttWidth = el.offsetWidth
   const ttHeight = el.offsetHeight
   const margin = 4
-  const left = clampHorizontal(offsetLeft + tooltip.caretX, ttWidth, parent.clientWidth, margin)
-  let top = offsetTop + tooltip.caretY
-  const minTop = ttHeight + 16 + margin
-  if (top < minTop) top = minTop
+  const targetX = offsetLeft + tooltip.caretX
+  const targetY = offsetTop + tooltip.caretY
+  const left = clampHorizontal(targetX, ttWidth, parent.clientWidth, margin)
+  const flipBelow = targetY < ttHeight + 16 + margin
+  el.style.transform = flipBelow ? 'translate(-50%, 16px)' : 'translate(-50%, calc(-100% - 16px))'
+  const caret = el.querySelector('.nc-tt__caret')
+  if (caret) {
+    if (flipBelow) {
+      caret.style.bottom = ''
+      caret.style.top = '-5px'
+      caret.style.borderRight = ''
+      caret.style.borderBottom = ''
+      caret.style.borderLeft = '1px solid rgba(15,23,42,.06)'
+      caret.style.borderTop = '1px solid rgba(15,23,42,.06)'
+    } else {
+      caret.style.top = ''
+      caret.style.bottom = '-5px'
+      caret.style.borderLeft = ''
+      caret.style.borderTop = ''
+      caret.style.borderRight = '1px solid rgba(15,23,42,.06)'
+      caret.style.borderBottom = '1px solid rgba(15,23,42,.06)'
+    }
+  }
   el.style.left = left + 'px'
-  el.style.top = top + 'px'
+  el.style.top = targetY + 'px'
   el.style.visibility = 'visible'
 }
 
@@ -329,7 +348,7 @@ function onBotaoClick() {
 
   .card-polar--left .card-polar__corpo,
   .card-polar--right .card-polar__corpo {
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: stretch;
     gap: 1rem;
   }
