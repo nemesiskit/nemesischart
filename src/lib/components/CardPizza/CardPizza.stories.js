@@ -35,8 +35,10 @@ export default {
     mostrarCabecalho: { control: { type: 'boolean' } },
     exportar: { control: { type: 'boolean' } },
     nomeArquivoExport: { control: { type: 'text' } },
+    itensClicaveis: { control: { type: 'boolean' } },
     botaoAcao: { action: 'botaoAcao' },
     exportado: { action: 'exportado' },
+    itemClicado: { action: 'itemClicado' },
   },
   args: {
     legenda: 'legenda',
@@ -53,6 +55,7 @@ export default {
     textoBotao: 'Ver mais',
     exportar: false,
     nomeArquivoExport: 'card-pizza.png',
+    itensClicaveis: false,
     corBorda: '#EAE8E8',
     borderRadius: '1rem',
     sombra: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)',
@@ -128,6 +131,31 @@ export const SombraForte = {
     corBorda: 'transparent',
     borderRadius: '20px',
   },
+}
+
+export const ItensClicaveis = {
+  args: {
+    itensClicaveis: true,
+    titulo: 'Clique',
+    descricao: 'em um item',
+  },
+  render: (args) => ({
+    components: { CardPizza },
+    setup() {
+      const selecionado = ref(null)
+      const onItem = (payload) => { selecionado.value = payload }
+      return { args, selecionado, onItem }
+    },
+    template: `
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <CardPizza v-bind="args" @item-clicado="onItem" />
+        <div style="font-family:monospace;font-size:0.85rem;padding:0.75rem 1rem;border:1px dashed rgba(15,23,42,0.2);border-radius:8px;">
+          <strong>Último item:</strong>
+          {{ selecionado ? selecionado.item.rotulo + ' (' + selecionado.item.quantidade + ')' : '—' }}
+        </div>
+      </div>
+    `,
+  }),
 }
 
 export const DadosAleatorios = {

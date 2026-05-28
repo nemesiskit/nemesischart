@@ -51,9 +51,10 @@ const props = defineProps({
   cutout: { type: [String, Number], default: '70%' },
   exportar: { type: Boolean, default: false },
   nomeArquivoExport: { type: String, default: 'card-pizza.png' },
+  itensClicaveis: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['botaoAcao', 'exportado'])
+const emit = defineEmits(['botaoAcao', 'exportado', 'itemClicado'])
 
 const { palette, cardStyle } = useTema(props)
 const { formatar } = useFormatadorValor(props)
@@ -145,11 +146,33 @@ function externalTooltip(context) {
   el.style.visibility = 'visible'
 }
 
+function emitirItem(index) {
+  const item = props.data[index]
+  if (!item) return
+  emit('itemClicado', { item, index, cor: coresAplicadas.value[index] })
+}
+
+function onItemClick(item, index) {
+  if (!props.itensClicaveis) return
+  emit('itemClicado', { item, index, cor: coresAplicadas.value[index] })
+}
+
+const hoverIndex = ref(null)
+
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   cutout: props.cutout,
   layout: { padding: 4 },
+  onHover: (event, elements, chart) => {
+    const idx = elements.length ? elements[0].index : null
+    hoverIndex.value = idx
+    chart.canvas.style.cursor = props.itensClicaveis && elements.length ? 'pointer' : 'default'
+  },
+  onClick: (event, elements) => {
+    if (!props.itensClicaveis || !elements.length) return
+    emitirItem(elements[0].index)
+  },
   plugins: {
     legend: { display: false },
     tooltip: {
@@ -202,8 +225,24 @@ const iconeExportar = ICONE_EXPORTAR_SVG
           <span>{{ rotuloCategoria }}</span>
           <span class="nc-tabela-valor">{{ rotuloQuantidade }}</span>
         </div>
-        <div v-for="(item, i) in data" :key="i" class="nc-tabela-linha flex align-items-center justify-content-between"
-          :style="{ color: palette.text }">
+        <div v-for="(item, i) in data" :key="i"
+          class="nc-tabela-linha flex align-items-center justify-content-between"
+          :class="{ 'nc-tabela-linha--clicavel': itensClicaveis, 'nc-tabela-linha--ativa': hoverIndex === i }"
+          :style="{
+            color: palette.text,
+            cursor: itensClicaveis ? 'pointer' : 'default',
+            '--nc-linha-bg': toRgba(coresAplicadas[i], 0.05),
+            '--nc-linha-bg-forte': toRgba(coresAplicadas[i], 0.08),
+          }"
+          :role="itensClicaveis ? 'button' : null"
+          :tabindex="itensClicaveis ? 0 : null"
+          @mouseenter="hoverIndex = i"
+          @mouseleave="hoverIndex = null"
+          @focus="hoverIndex = i"
+          @blur="hoverIndex = null"
+          @click="onItemClick(item, i)"
+          @keydown.enter.prevent="onItemClick(item, i)"
+          @keydown.space.prevent="onItemClick(item, i)">
           <span class="nc-tabela-rotulo inline-flex align-items-center gap-2">
             <span class="nc-bolinha" :style="{ background: coresAplicadas[i] }"></span>
             <span>{{ item.rotulo }}</span>
@@ -313,6 +352,25 @@ const iconeExportar = ICONE_EXPORTAR_SVG
   position: relative;
   width: 100%;
   min-width: 0;
+}
+
+.nc-tabela-linha {
+  position: relative;
+  border-radius: 8px;
+  padding-inline: 0;
+  transition: background 0.18s ease, padding-inline 0.18s ease;
+}
+
+.nc-tabela-linha--ativa {
+  background: var(--nc-linha-bg, rgba(15, 23, 42, 0.03));
+  padding-inline: 0.40rem;
+}
+
+.nc-tabela-linha--clicavel:hover,
+.nc-tabela-linha--clicavel:focus-visible {
+  background: var(--nc-linha-bg-forte, rgba(15, 23, 42, 0.04));
+  padding-inline: 0.40rem;
+  outline: none;
 }
 
 /* breakpoint baseado no tamanho do componente, não do viewport */
