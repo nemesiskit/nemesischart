@@ -1,3 +1,5 @@
+import { ref } from 'vue'
+
 function copiarEstilos(origem, destino) {
   const cs = window.getComputedStyle(origem)
   let css = ''
@@ -112,3 +114,21 @@ export async function exportarElementoComoImagem(elemento, opcoes = {}) {
 
 export const ICONE_EXPORTAR_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+
+/**
+ * Encapsula a exportação do card como imagem: cria o ref do elemento raiz,
+ * resolve a cor de fundo a partir da paleta e emite 'exportado' ao concluir.
+ */
+export function useExportarCard(props, palette, emit) {
+  const cardRef = ref(null)
+
+  async function onExportar() {
+    await exportarElementoComoImagem(cardRef.value, {
+      nomeArquivo: props.nomeArquivoExport,
+      corFundo: palette.value.bg !== 'transparent' ? palette.value.bg : null,
+    })
+    emit('exportado')
+  }
+
+  return { cardRef, onExportar, iconeExportar: ICONE_EXPORTAR_SVG }
+}

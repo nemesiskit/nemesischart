@@ -78,10 +78,6 @@ export default {
     },
 
     // Aparência
-    cores: {
-      control: { type: 'object' },
-      description: 'Paleta de cores usada nos itens que não definem `cor` individualmente.',
-    },
     corFundo: { control: { type: 'color' }, description: 'Cor de fundo do card (sobrescreve o tema).' },
     corTexto: { control: { type: 'color' }, description: 'Cor do texto principal (sobrescreve o tema).' },
     corBorda: { control: { type: 'color' }, description: 'Cor da borda do card.' },

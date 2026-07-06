@@ -22,13 +22,12 @@ export default defineConfig(({ mode }) => {
           fileName: (format) => `nemesischart.${format === 'es' ? 'js' : 'umd.cjs'}`,
         },
         rollupOptions: {
-          external: ['vue', 'chart.js', 'primevue', 'primeflex', 'primeicons'],
+          external: ['vue', 'chart.js'],
           output: {
             exports: 'named',
             globals: {
               vue: 'Vue',
               'chart.js': 'Chart',
-              primevue: 'PrimeVue',
             },
           },
         },

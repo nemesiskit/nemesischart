@@ -108,12 +108,21 @@ watch(
   { deep: true },
 )
 
+// chart.js não suporta troca de tipo em uma instância existente
+watch(
+  () => props.type,
+  () => {
+    destroy()
+    create()
+  },
+)
+
 defineExpose({ chart: chartInstance })
 </script>
 
 <template>
   <div
-    class="nc-chart-wrapper w-full"
+    class="nc-chart-wrapper"
     :style="{
       height: typeof height === 'number' ? `${height}px` : height,
       width: width ? (typeof width === 'number' ? `${width}px` : width) : '100%',

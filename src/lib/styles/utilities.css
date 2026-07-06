@@ -1,0 +1,34 @@
+/*
+ * Utilitários internos da lib (prefixo nc-).
+ * Substituem o subconjunto do PrimeFlex usado pelos componentes, com os
+ * mesmos valores e `!important`, para manter a cascata idêntica sem exigir
+ * o PrimeFlex como dependência. Não usar fora dos componentes da lib.
+ */
+
+.nc-flex { display: flex !important; }
+.nc-inline-flex { display: inline-flex !important; }
+.nc-flex-column { flex-direction: column !important; }
+.nc-flex-wrap { flex-wrap: wrap !important; }
+.nc-flex-1 { flex: 1 1 0% !important; }
+
+.nc-align-items-start { align-items: flex-start !important; }
+.nc-align-items-center { align-items: center !important; }
+.nc-justify-content-center { justify-content: center !important; }
+.nc-justify-content-between { justify-content: space-between !important; }
+
+.nc-gap-2 { gap: 0.5rem !important; }
+.nc-gap-3 { gap: 1rem !important; }
+
+.nc-p-4 { padding: 1.5rem !important; }
+.nc-m-0 { margin: 0 !important; }
+.nc-mt-1 { margin-top: 0.25rem !important; }
+.nc-mt-3 { margin-top: 1rem !important; }
+.nc-mb-2 { margin-bottom: 0.5rem !important; }
+
+.nc-w-full { width: 100% !important; }
+
+.nc-text-xs { font-size: 0.75rem !important; }
+.nc-text-sm { font-size: 0.875rem !important; }
+.nc-text-3xl { font-size: 1.75rem !important; }
+.nc-font-medium { font-weight: 500 !important; }
+.nc-font-semibold { font-weight: 600 !important; }

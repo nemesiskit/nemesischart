@@ -7,7 +7,7 @@ function gerarDadosAleatorios() {
   return ROTULOS.map((rotulo) => ({ rotulo, quantidade: Math.floor(Math.random() * 5000) + 100 }))
 }
 
-const sampleData = [
+const desempenhoPorCategoria = [
   { rotulo: 'Vendas', quantidade: 4200 },
   { rotulo: 'Serviços', quantidade: 3100 },
   { rotulo: 'Assinaturas', quantidade: 2450 },
@@ -25,6 +25,10 @@ export default {
     tema: { control: { type: 'select' }, options: ['light', 'dark', 'transparent'] },
     direcao: { control: { type: 'inline-radio' }, options: ['top', 'bottom', 'left', 'right'] },
     tipoValor: { control: { type: 'inline-radio' }, options: ['numero', 'moeda', 'percentual'] },
+    corDetalhes: {
+      control: { type: 'color' },
+      description: 'Cor base da paleta gerada automaticamente para os setores (itens podem sobrescrever com `cor`).',
+    },
     corFundo: { control: { type: 'color' } },
     corTexto: { control: { type: 'color' } },
     corBorda: { control: { type: 'color' } },
@@ -36,13 +40,18 @@ export default {
     exportar: { control: { type: 'boolean' } },
     nomeArquivoExport: { control: { type: 'text' } },
     itensClicaveis: { control: { type: 'boolean' } },
+    detalheTooltip: {
+      control: false,
+      description:
+        'Função `(item, index) => string | string[]`. Recebe o item original de `data` e retorna texto(s) extra(s) exibidos no tooltip abaixo do valor. Use para mostrar um detalhe complementar (ex.: participação %, contagem, meta).',
+    },
     botaoAcao: { action: 'botaoAcao' },
     exportado: { action: 'exportado' },
     itemClicado: { action: 'itemClicado' },
   },
   args: {
-    legenda: 'legenda',
-    sublegenda: 'sublegenda',
+    legenda: 'Desempenho por categoria',
+    sublegenda: '2026',
     titulo: null,
     descricao: null,
     tema: 'light',
@@ -61,30 +70,26 @@ export default {
     borderRadius: '1rem',
     sombra: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)',
     height: 260,
-    data: sampleData,
+    data: desempenhoPorCategoria,
   },
 }
 
-export const Light = { args: { tema: 'light' } }
-export const Dark = { args: { tema: 'dark' } }
-export const Transparent = { args: { tema: 'transparent' } }
+/**
+ * Exemplo canônico. Use os controles (tema, direção, grade, cabeçalho, botão,
+ * exportar…) para explorar as variações. `direcao` muda o layout: tabela ao lado
+ * (`left`/`right`) ou abaixo (`top`/`bottom`).
+ */
+export const Padrao = {}
 
-export const DirecaoLeft = { args: { direcao: 'left' } }
-export const DirecaoTop = { args: { direcao: 'top' } }
-export const DirecaoBottom = { args: { direcao: 'bottom' } }
+/** Tema escuro. */
+export const Escuro = { args: { tema: 'dark' } }
 
-export const Moeda = {
-  args: {
-    tipoValor: 'moeda',
-    data: [
-      { rotulo: 'Vendas', quantidade: 12 },
-      { rotulo: 'Serviços', quantidade: 8 },
-      { rotulo: 'Assinaturas', quantidade: 6 },
-      { rotulo: 'Outros', quantidade: 9 },
-    ],
-  },
+/** Tema transparente — sem fundo/sombra, para compor dentro de outro container. */
+export const Transparente = {
+  args: { tema: 'transparent', sombra: 'none', corBorda: 'transparent' },
 }
 
+/** `tipoValor="percentual"` — participação por dispositivo. */
 export const Percentual = {
   args: {
     tipoValor: 'percentual',
@@ -96,52 +101,67 @@ export const Percentual = {
   },
 }
 
-export const CoresCustomizadas = {
-  args: {
-    cores: ['#0F766E', '#14B8A6', '#5EEAD4', '#99F6E4', '#CCFBF1'],
-    data: [
-      { rotulo: 'A', quantidade: 30 },
-      { rotulo: 'B', quantidade: 25 },
-      { rotulo: 'C', quantidade: 20 },
-      { rotulo: 'D', quantidade: 15 },
-      { rotulo: 'E', quantidade: 10 },
-    ],
-  },
-}
-
+/** Sem as linhas de grade radiais — visual mais limpo. */
 export const SemGrade = {
   args: { mostrarLinhasGrade: false },
 }
 
-export const ComBotao = {
-  args: { botaoVisivel: true, textoBotao: 'Ver detalhes' },
-}
-
-export const ComExportar = {
-  args: { exportar: true, nomeArquivoExport: 'distribuicao-polar.png' },
-}
-
-export const SemCabecalho = {
-  args: { mostrarCabecalho: false },
-}
-
-export const SombraForte = {
+/** Cor por item — cada setor define sua própria `cor`. */
+export const CoresPorItem = {
+  name: 'Cores por item',
   args: {
-    sombra: '0 10px 30px rgba(15, 23, 42, 0.18)',
-    corBorda: 'transparent',
-    borderRadius: '20px',
+    data: [
+      { rotulo: 'Concluído', quantidade: 62, cor: '#10B981' },
+      { rotulo: 'Em andamento', quantidade: 23, cor: '#F59E0B' },
+      { rotulo: 'Atrasado', quantidade: 15, cor: '#EF4444' },
+    ],
   },
 }
 
+/**
+ * `detalheTooltip` acrescenta uma linha extra no tooltip, abaixo do valor.
+ *
+ * **Como definir:** passe uma função que recebe o item original de `data` (e o
+ * índice) e devolve uma string — ou um array de strings para várias linhas.
+ * Os campos extras precisam existir em cada item de `data`.
+ *
+ * ```vue
+ * <CardPolar
+ *   :data="[
+ *     { rotulo: 'Vendas', quantidade: 4200, meta: 5000 },
+ *     { rotulo: 'Serviços', quantidade: 3100, meta: 2800 },
+ *   ]"
+ *   :detalheTooltip="(item) => `Meta: ${item.meta}`"
+ * />
+ * ```
+ */
+export const DetalheTooltip = {
+  name: 'Detalhe no tooltip',
+  args: {
+    legenda: 'Desempenho por categoria',
+    sublegenda: '2026',
+    tipoValor: 'numero',
+    data: [
+      { rotulo: 'Vendas', quantidade: 4200, meta: 5000 },
+      { rotulo: 'Serviços', quantidade: 3100, meta: 2800 },
+      { rotulo: 'Assinaturas', quantidade: 2450, meta: 2500 },
+      { rotulo: 'Licenças', quantidade: 1800, meta: 1500 },
+      { rotulo: 'Suporte', quantidade: 1250, meta: 1400 },
+    ],
+    detalheTooltip: (item) => `Meta: ${item.meta.toLocaleString('pt-BR')}`,
+  },
+}
+
+/** Itens clicáveis — emite `itemClicado` ao clicar num setor ou linha da tabela. */
 export const ItensClicaveis = {
-  args: {
-    itensClicaveis: true,
-  },
+  args: { itensClicaveis: true },
   render: (args) => ({
     components: { CardPolar },
     setup() {
       const selecionado = ref(null)
-      const onItem = (payload) => { selecionado.value = payload }
+      const onItem = (payload) => {
+        selecionado.value = payload
+      }
       return { args, selecionado, onItem }
     },
     template: `
@@ -156,12 +176,15 @@ export const ItensClicaveis = {
   }),
 }
 
-export const DadosAleatorios = {
+/** Interativo — regenera os dados para visualizar a transição dos setores. */
+export const Interativo = {
   render: (args) => ({
     components: { CardPolar },
     setup() {
       const localData = ref(gerarDadosAleatorios())
-      const gerar = () => { localData.value = gerarDadosAleatorios() }
+      const gerar = () => {
+        localData.value = gerarDadosAleatorios()
+      }
       return { args, localData, gerar }
     },
     template: `

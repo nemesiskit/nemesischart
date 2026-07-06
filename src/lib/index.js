@@ -10,8 +10,23 @@ export { ChartBase, CardBase, CardLinhas, CardPizza, CardBarra, CardPolar, CardP
 
 export { useTema, toRgba, gerarPaleta } from './composables/useTema.js'
 export { useFormatadorValor } from './composables/useFormatadorValor.js'
-export { criarTooltipEl, prepararTooltipParent, clampHorizontal } from './composables/useTooltipExterno.js'
-export { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from './composables/useExportarImagem.js'
+export {
+  criarTooltipEl,
+  prepararTooltipParent,
+  clampHorizontal,
+  ttTitulo,
+  ttLinhaValor,
+  ttLinhaTexto,
+  aplicarCaretFlip,
+  criarTooltipExternoPadrao,
+} from './composables/useTooltipExterno.js'
+export { useLinhasReferencia } from './composables/useLinhasReferencia.js'
+export {
+  exportarElementoComoImagem,
+  useExportarCard,
+  ICONE_EXPORTAR_SVG,
+} from './composables/useExportarImagem.js'
+export { propsCartao, propsValor, propsDirecao, propsTabela, SOMBRA_PADRAO } from './props.js'
 
 export default {
   install(app) {

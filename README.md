@@ -1,6 +1,6 @@
 # NemesisChart
 
-Biblioteca de componentes Vue 3 para construção rápida de cards e dashboards com gráficos, construída sobre [Chart.js](https://www.chartjs.org/), [PrimeVue](https://primevue.org/) e [PrimeFlex](https://primeflex.org/).
+Biblioteca de componentes Vue 3 para construção rápida de cards e dashboards com gráficos, construída sobre [Chart.js](https://www.chartjs.org/) — sem dependências de UI externas (todo o CSS necessário já vem no bundle).
 
 Todos os componentes seguem o mesmo padrão: um cartão (`Card*`) que exibe legenda, sublegenda, valor de destaque, descrição e o gráfico correspondente — com suporte a temas claro/escuro, formatação automática de valores e exportação como imagem.
 
@@ -30,10 +30,10 @@ Todos os componentes seguem o mesmo padrão: um cartão (`Card*`) que exibe lege
 ## Instalação
 
 ```bash
-npm install nemesischart chart.js primevue primeflex primeicons
+npm install nemesischart chart.js
 ```
 
-`vue`, `chart.js`, `primevue` e `primeflex` são peer-deps do bundle de lib.
+`vue` e `chart.js` são as únicas peer-deps do bundle de lib. A partir da v2.1.0, PrimeVue, PrimeFlex e PrimeIcons **não são mais necessários** — os estilos utilitários usados pelos componentes são embutidos em `nemesischart/style.css` (prefixo `nc-`), mantendo o mesmo visual.
 
 ## Uso rápido
 
@@ -41,18 +41,12 @@ npm install nemesischart chart.js primevue primeflex primeicons
 
 ```js
 import { createApp } from 'vue'
-import PrimeVue from 'primevue/config'
 import NemesisChart from 'nemesischart'
 import 'nemesischart/style.css'
-
-import 'primevue/resources/themes/lara-light-blue/theme.css'
-import 'primeicons/primeicons.css'
-import 'primeflex/primeflex.css'
 
 import App from './App.vue'
 
 createApp(App)
-  .use(PrimeVue)
   .use(NemesisChart)
   .mount('#app')
 ```
@@ -135,6 +129,21 @@ Props específicas:
 | `corDetalhesSecundaria` | String | — | Segunda cor para gradiente combinado. |
 | `series` | Array | — | Várias linhas. |
 | `direcao` | `top` \| `bottom` \| `left` \| `right` | `top` | Posição do header em relação ao gráfico. |
+| `detalheTooltip` | Function | — | `(item, index) => string \| string[]`. Recebe o item original de `data` e retorna texto(s) extra(s) exibidos no tooltip abaixo do valor. |
+
+Exemplo — mostrar a quantidade de pagamentos por mês no tooltip, além do valor:
+
+```vue
+<CardLinhas
+  legenda="Pagamentos realizados"
+  tipoValor="moeda"
+  :data="[
+    { rotulo: 'Jan', quantidade: 2456173.9, pagamentos: 1353 },
+    { rotulo: 'Fev', quantidade: 3889895.3, pagamentos: 1269 },
+  ]"
+  :detalheTooltip="(item) => `${item.pagamentos} pagamentos`"
+/>
+```
 
 ### CardBarra
 
@@ -160,6 +169,7 @@ Props específicas:
 | `series` | Array | — |
 | `cores` | Array&lt;String&gt; | paleta padrão |
 | `mostrarLegendaSeries` | Boolean | `true` |
+| `detalheTooltip` | Function | — | `(item, index) => string \| string[]`. Texto(s) extra(s) no tooltip, abaixo dos valores. Recebe o item da 1ª série. |
 
 ### CardPizza
 
@@ -179,12 +189,15 @@ Props específicas:
 
 | Prop | Tipo | Padrão |
 |---|---|---|
-| `cores` | Array&lt;String&gt; | paleta padrão |
+| `corDetalhes` | String | `#3B82F6` (gera a paleta das fatias; itens podem sobrescrever com `cor`) |
 | `cutout` | String/Number | `'70%'` |
 | `direcao` | `left` \| `right` \| `top` \| `bottom` | `right` |
 | `rotuloCategoria` | String | `'Categoria'` |
 | `rotuloQuantidade` | String | `'Quantidade'` |
 | `mostrarCabecalho` | Boolean | `true` |
+| `itensClicaveis` | Boolean | `false` |
+| `detalheTooltip` | Function | — &nbsp;`(item, index) => string \| string[]`. Texto(s) extra(s) no tooltip do gráfico, abaixo do valor. |
+| `tooltipLinha` | Function | — &nbsp;`(item, index) => string`. Tooltip nativo (`title`) na linha da tabela lateral. Quando omitido, usa `item.descricao`. |
 
 ### CardPolar
 
@@ -192,8 +205,11 @@ Polar area com grid configurável.
 
 | Prop | Tipo | Padrão |
 |---|---|---|
-| `cores` | Array&lt;String&gt; | paleta padrão |
+| `corDetalhes` | String | `#3B82F6` (gera a paleta dos setores; itens podem sobrescrever com `cor`) |
 | `mostrarLinhasGrade` | Boolean | `true` |
+| `itensClicaveis` | Boolean | `false` |
+| `detalheTooltip` | Function | — &nbsp;`(item, index) => string \| string[]`. Texto(s) extra(s) no tooltip do gráfico, abaixo do valor. |
+| `tooltipLinha` | Function | — &nbsp;`(item, index) => string`. Tooltip nativo (`title`) na linha da tabela lateral. Quando omitido, usa `item.descricao`. |
 
 ### CardProgresso
 
@@ -237,9 +253,8 @@ Barras de progresso lineares ou circulares. Suporta metas de **crescimento** e d
 | `alturaBarra` | Number/String | `8` | Altura das barras em px. |
 | `raioBarra` | String/Number | `'999px'` | Border-radius das barras. |
 | `cutout` | String/Number | `'78%'` | Espessura do anel no modo circular. |
-| `corDetalhes` | String | `'#3B82F6'` | Cor do gráfico circular em modo crescimento. |
+| `corDetalhes` | String | `'#3B82F6'` | Cor do gráfico circular em modo crescimento e base da paleta automática dos itens. |
 | `corExcesso` | String | `'#EF4444'` | Cor de alerta usada em itens com modo `reducao`. |
-| `cores` | Array&lt;String&gt; | paleta padrão | Cores automáticas dos itens. |
 
 ### CardBase
 
@@ -318,8 +333,10 @@ Disponíveis para customizar gráficos sob medida:
 
 - `useTema(props)` — calcula `palette` (bg, text, muted, …) e `cardStyle`.
 - `useFormatadorValor(props)` — retorna `formatar(valor)` com base em `tipoValor`/`locale`/`moeda`.
-- `useTooltipExterno` — utilitários para tooltip HTML customizado (`criarTooltipEl`, `prepararTooltipParent`, `clampHorizontal`).
-- `useExportarImagem` — `exportarElementoComoImagem(el, opções)` e o ícone SVG padrão.
+- `useTooltipExterno` — utilitários para tooltip HTML customizado (`criarTooltipEl`, `prepararTooltipParent`, `clampHorizontal`, `ttTitulo`, `ttLinhaValor`, `aplicarCaretFlip`, `criarTooltipExternoPadrao`).
+- `useLinhasReferencia({ linhasReferencia, horizontal, formatar })` — plugin Chart.js de linhas de referência (metas/limites) com rótulo e tooltip próprios.
+- `useExportarImagem` — `exportarElementoComoImagem(el, opções)`, `useExportarCard(props, palette, emit)` e o ícone SVG padrão.
+- `propsCartao` / `propsValor` / `propsDirecao` / `propsTabela` — fábricas das definições de props compartilhadas, úteis para criar novos cards seguindo o mesmo contrato.
 
 ---
 

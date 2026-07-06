@@ -1,40 +1,20 @@
 <script setup>
 import { computed, ref } from 'vue'
 import ChartBase from '../ChartBase/ChartBase.vue'
+import CardCabecalho from '../internos/CardCabecalho.vue'
+import TabelaDados from '../internos/TabelaDados.vue'
 import { useTema, toRgba, gerarPaleta } from '../../composables/useTema.js'
 import { useFormatadorValor } from '../../composables/useFormatadorValor.js'
-import { criarTooltipEl, prepararTooltipParent, clampHorizontal } from '../../composables/useTooltipExterno.js'
-import { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from '../../composables/useExportarImagem.js'
+import { criarTooltipExternoPadrao } from '../../composables/useTooltipExterno.js'
+import { useExportarCard } from '../../composables/useExportarImagem.js'
+import { propsCartao, propsValor, propsDirecao, propsTabela } from '../../props.js'
 
 const props = defineProps({
-  legenda: { type: String, default: null },
-  sublegenda: { type: String, default: null },
-  titulo: { type: String, default: null },
-  descricao: { type: String, default: null },
-  tema: { type: String, default: 'light' },
-  corFundo: { type: String, default: null },
-  corTexto: { type: String, default: null },
-  corBorda: { type: String, default: '#EAE8E8' },
-  borderRadius: { type: [String, Number], default: '0.75rem' },
-  sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
+  ...propsCartao({ nomeArquivoExport: 'card-polar.png' }),
+  ...propsValor(),
+  ...propsDirecao('right'),
+  ...propsTabela(),
   corDetalhes: { type: String, default: '#3B82F6' },
-  textoBotao: { type: String, default: 'Ver mais' },
-  botaoVisivel: { type: Boolean, default: false },
-  direcao: {
-    type: String,
-    default: 'right',
-    validator: (v) => ['left', 'right', 'top', 'bottom'].includes(v),
-  },
-  rotuloCategoria: { type: String, default: 'Categoria' },
-  rotuloQuantidade: { type: String, default: 'Quantidade' },
-  mostrarCabecalho: { type: Boolean, default: true },
-  tipoValor: {
-    type: String,
-    default: 'numero',
-    validator: (v) => ['numero', 'moeda', 'percentual'].includes(v),
-  },
-  locale: { type: String, default: 'pt-BR' },
-  moeda: { type: String, default: 'BRL' },
   data: {
     type: Array,
     default: () => [
@@ -49,25 +29,16 @@ const props = defineProps({
   },
   height: { type: [String, Number], default: 260 },
   mostrarLinhasGrade: { type: Boolean, default: true },
-  exportar: { type: Boolean, default: false },
-  nomeArquivoExport: { type: String, default: 'card-polar.png' },
-  itensClicaveis: { type: Boolean, default: false },
+  // Recebe o item original de `data` e retorna texto(s) extra(s) exibidos no
+  // tooltip abaixo do valor. Pode devolver uma string ou um array de strings.
+  detalheTooltip: { type: Function, default: null },
 })
 
 const emit = defineEmits(['botaoAcao', 'exportado', 'itemClicado'])
 
 const { palette, cardStyle } = useTema(props)
 const { formatar } = useFormatadorValor(props)
-const cardRef = ref(null)
-const iconeExportar = ICONE_EXPORTAR_SVG
-
-async function onExportar() {
-  await exportarElementoComoImagem(cardRef.value, {
-    nomeArquivo: props.nomeArquivoExport,
-    corFundo: palette.value.bg !== 'transparent' ? palette.value.bg : null,
-  })
-  emit('exportado')
-}
+const { cardRef, onExportar, iconeExportar } = useExportarCard(props, palette, emit)
 
 const layoutClass = computed(() => `card-polar--${props.direcao}`)
 
@@ -89,87 +60,34 @@ const chartData = computed(() => ({
   ],
 }))
 
-function externalTooltip(context) {
-  const { chart, tooltip } = context
-  const parent = prepararTooltipParent(chart)
-  if (!parent) return
-  const el = criarTooltipEl(parent)
-  if (tooltip.opacity === 0) {
-    el.style.opacity = '0'
-    return
-  }
-  const titleLines = tooltip.title || []
-  const dp = tooltip.dataPoints && tooltip.dataPoints[0]
-  const cor = dp ? coresAplicadas.value[dp.dataIndex] : '#3B82F6'
-  const valor = dp ? formatar(dp.parsed.r ?? dp.parsed) : ''
-  const content = el.querySelector('.nc-tt__content')
-  content.innerHTML =
-    `<div style="font-size:9px;font-weight:500;color:#94A3B8;letter-spacing:.04em;text-transform:uppercase;line-height:1;margin-bottom:4px;">${titleLines.join(' ')}</div>` +
-    `<div style="display:flex;align-items:center;gap:6px;">` +
-      `<span style="width:6px;height:6px;border-radius:999px;background:${cor};box-shadow:0 0 0 2px ${toRgba(cor, 0.15)};flex:0 0 auto;"></span>` +
-      `<span style="font-size:12px;font-weight:700;color:#0F172A;letter-spacing:-.01em;line-height:1.1;">${valor}</span>` +
-    `</div>`
-  const { offsetLeft, offsetTop } = chart.canvas
-  el.style.opacity = '1'
-  el.style.visibility = 'hidden'
-  el.style.left = '0px'
-  el.style.top = '0px'
-  const ttWidth = el.offsetWidth
-  const ttHeight = el.offsetHeight
-  const margin = 4
-  const targetX = offsetLeft + tooltip.caretX
-  const targetY = offsetTop + tooltip.caretY
-  const left = clampHorizontal(targetX, ttWidth, parent.clientWidth, margin)
-  const flipBelow = targetY < ttHeight + 16 + margin
-  el.style.transform = flipBelow ? 'translate(-50%, 16px)' : 'translate(-50%, calc(-100% - 16px))'
-  const caret = el.querySelector('.nc-tt__caret')
-  if (caret) {
-    if (flipBelow) {
-      caret.style.bottom = ''
-      caret.style.top = '-5px'
-      caret.style.borderRight = ''
-      caret.style.borderBottom = ''
-      caret.style.borderLeft = '1px solid rgba(15,23,42,.06)'
-      caret.style.borderTop = '1px solid rgba(15,23,42,.06)'
-    } else {
-      caret.style.top = ''
-      caret.style.bottom = '-5px'
-      caret.style.borderLeft = ''
-      caret.style.borderTop = ''
-      caret.style.borderRight = '1px solid rgba(15,23,42,.06)'
-      caret.style.borderBottom = '1px solid rgba(15,23,42,.06)'
-    }
-  }
-  el.style.left = left + 'px'
-  el.style.top = targetY + 'px'
-  el.style.visibility = 'visible'
-}
-
-function emitirItem(index) {
-  const item = props.data[index]
-  if (!item) return
-  emit('itemClicado', { item, index, cor: coresAplicadas.value[index] })
-}
-
-function onItemClick(item, index) {
-  if (!props.itensClicaveis) return
-  emit('itemClicado', { item, index, cor: coresAplicadas.value[index] })
-}
+const externalTooltip = criarTooltipExternoPadrao({
+  corDe: (dp) => coresAplicadas.value[dp.dataIndex],
+  valorDe: (dp) => formatar(dp.parsed.r ?? dp.parsed),
+  linhasExtrasDe: props.detalheTooltip
+    ? (dp) => props.detalheTooltip(props.data[dp.dataIndex], dp.dataIndex)
+    : null,
+})
 
 const hoverIndex = ref(null)
+
+function emitirItem(payload) {
+  emit('itemClicado', payload)
+}
 
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   layout: { padding: 4 },
   onHover: (event, elements, chart) => {
-    const idx = elements.length ? elements[0].index : null
-    hoverIndex.value = idx
+    hoverIndex.value = elements.length ? elements[0].index : null
     chart.canvas.style.cursor = props.itensClicaveis && elements.length ? 'pointer' : 'default'
   },
   onClick: (event, elements) => {
     if (!props.itensClicaveis || !elements.length) return
-    emitirItem(elements[0].index)
+    const index = elements[0].index
+    const item = props.data[index]
+    if (!item) return
+    emitirItem({ item, index, cor: coresAplicadas.value[index] })
   },
   scales: {
     r: {
@@ -198,75 +116,29 @@ const chartOptions = computed(() => ({
     },
   },
 }))
-
-function onBotaoClick() {
-  emit('botaoAcao')
-}
 </script>
 
 <template>
-  <div ref="cardRef" class="card-polar p-4 flex flex-column" :class="layoutClass" :style="cardStyle">
-    <div class="card-polar__topo flex align-items-start justify-content-between gap-3">
-      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="nc-legendas-flex flex flex-column">
-        <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.95 }">
-          <slot name="legenda">{{ legenda }}</slot>
-        </div>
-        <div v-if="$slots.sublegenda || sublegenda" class="text-xs" :style="{ color: palette.muted }">
-          <slot name="sublegenda">{{ sublegenda }}</slot>
-        </div>
-      </div>
-      <div v-if="$slots.actions || botaoVisivel || exportar" class="nc-actions inline-flex align-items-center gap-2">
-        <slot name="actions">
-          <button v-if="botaoVisivel" class="nc-btn inline-flex align-items-center"
-            :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }" @click="onBotaoClick">
-            <span>{{ textoBotao }}</span>
-          </button>
-        </slot>
-        <button v-if="exportar" type="button" class="nc-exportar inline-flex align-items-center justify-content-center"
-          :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
-          title="Exportar como imagem" aria-label="Exportar como imagem"
-          @click="onExportar" v-html="iconeExportar"></button>
-      </div>
-    </div>
+  <div ref="cardRef" class="card-polar nc-p-4 nc-flex nc-flex-column" :class="layoutClass" :style="cardStyle">
+    <CardCabecalho class="card-polar__topo" :legenda="legenda" :sublegenda="sublegenda" :palette="palette"
+      :texto-botao="textoBotao" :botao-visivel="botaoVisivel" :exportar="exportar"
+      @botao-acao="emit('botaoAcao')" @exportar="onExportar">
+      <template v-if="$slots.legenda" #legenda><slot name="legenda" /></template>
+      <template v-if="$slots.sublegenda" #sublegenda><slot name="sublegenda" /></template>
+      <template v-if="$slots.actions" #actions><slot name="actions" /></template>
+    </CardCabecalho>
 
-    <div class="card-polar__corpo flex align-items-center">
-      <div class="nc-tabela flex flex-column">
-        <div v-if="mostrarCabecalho" class="nc-tabela-cab flex align-items-center justify-content-between"
-          :style="{ color: palette.muted, borderColor: toRgba(palette.muted, 0.25) }">
-          <span>{{ rotuloCategoria }}</span>
-          <span class="nc-tabela-valor">{{ rotuloQuantidade }}</span>
-        </div>
-        <div v-for="(item, i) in data" :key="i"
-          class="nc-tabela-linha flex align-items-center justify-content-between"
-          :class="{ 'nc-tabela-linha--clicavel': itensClicaveis, 'nc-tabela-linha--ativa': hoverIndex === i }"
-          :style="{
-            color: palette.text,
-            cursor: itensClicaveis ? 'pointer' : 'default',
-            '--nc-linha-bg': toRgba(coresAplicadas[i], 0.05),
-            '--nc-linha-bg-forte': toRgba(coresAplicadas[i], 0.08),
-          }"
-          :role="itensClicaveis ? 'button' : null"
-          :tabindex="itensClicaveis ? 0 : null"
-          @mouseenter="hoverIndex = i"
-          @mouseleave="hoverIndex = null"
-          @focus="hoverIndex = i"
-          @blur="hoverIndex = null"
-          @click="onItemClick(item, i)"
-          @keydown.enter.prevent="onItemClick(item, i)"
-          @keydown.space.prevent="onItemClick(item, i)">
-          <span class="nc-tabela-rotulo inline-flex align-items-center gap-2">
-            <span class="nc-bolinha" :style="{ background: coresAplicadas[i] }"></span>
-            <span>{{ item.rotulo }}</span>
-          </span>
-          <span class="nc-tabela-valor">{{ formatar(item.quantidade) }}</span>
-        </div>
-      </div>
+    <div class="card-polar__corpo nc-flex nc-align-items-center">
+      <TabelaDados :data="data" :cores-aplicadas="coresAplicadas" :palette="palette" :formatar="formatar"
+        :rotulo-categoria="rotuloCategoria" :rotulo-quantidade="rotuloQuantidade"
+        :mostrar-cabecalho="mostrarCabecalho" :itens-clicaveis="itensClicaveis" :tooltip-linha="tooltipLinha"
+        pad-ativa="0.25rem" v-model:hover-index="hoverIndex" @item-clicado="emitirItem" />
 
-      <div class="card-polar__chart-wrap flex align-items-center justify-content-center">
+      <div class="card-polar__chart-wrap nc-flex nc-align-items-center nc-justify-content-center">
         <div class="card-polar__chart">
           <ChartBase type="polarArea" :data="chartData" :options="chartOptions" :height="height" />
           <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-polar__centro-bottom">
-            <div v-if="$slots.titulo || titulo" class="card-polar__centro-titulo m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
+            <div v-if="$slots.titulo || titulo" class="card-polar__centro-titulo nc-m-0 nc-text-3xl nc-font-semibold" :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
               <slot name="titulo">{{ titulo }}</slot>
             </div>
             <div v-if="$slots.descricao || descricao" class="card-polar__centro-desc" :style="{ color: palette.muted }">
@@ -277,7 +149,7 @@ function onBotaoClick() {
       </div>
     </div>
 
-    <div v-if="$slots.footer" class="card-polar__footer mt-3">
+    <div v-if="$slots.footer" class="card-polar__footer nc-mt-3">
       <slot name="footer" />
     </div>
   </div>
@@ -292,13 +164,6 @@ function onBotaoClick() {
   transition: background 0.2s ease;
   overflow: hidden;
   font-family: 'Geist', sans-serif;
-}
-
-.card-polar__topo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
 }
 
 .card-polar__corpo {
@@ -381,25 +246,6 @@ function onBotaoClick() {
   margin-top: 0.15rem;
 }
 
-.nc-tabela-linha {
-  position: relative;
-  border-radius: 8px;
-  padding-inline: 0;
-  transition: background 0.18s ease, padding-inline 0.18s ease;
-}
-
-.nc-tabela-linha--ativa {
-  background: var(--nc-linha-bg, rgba(15, 23, 42, 0.03));
-  padding-inline: 0.25rem;
-}
-
-.nc-tabela-linha--clicavel:hover,
-.nc-tabela-linha--clicavel:focus-visible {
-  background: var(--nc-linha-bg-forte, rgba(15, 23, 42, 0.04));
-  padding-inline: 0.25rem;
-  outline: none;
-}
-
 @container (max-width: 520px) {
   .card-polar { gap: 0.75rem; }
   .card-polar__topo { flex-wrap: wrap; }
@@ -430,14 +276,11 @@ function onBotaoClick() {
 
   .card-polar__centro-titulo { font-size: 1rem; }
   .card-polar__centro-desc { font-size: 0.78rem; }
-  .nc-tabela-linha { font-size: 0.78rem; }
 }
 
 @container (max-width: 340px) {
   .card-polar__chart { max-width: 200px; }
   .card-polar__centro-titulo { font-size: 0.9rem; }
-  .nc-tabela-linha { font-size: 0.72rem; }
-  .nc-tabela-cab { font-size: 0.68rem; }
 }
 </style>
 

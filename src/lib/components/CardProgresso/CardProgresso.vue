@@ -1,43 +1,25 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import ChartBase from '../ChartBase/ChartBase.vue'
+import CardCabecalho from '../internos/CardCabecalho.vue'
+import CardTitulos from '../internos/CardTitulos.vue'
 import { useTema, toRgba, gerarPaleta } from '../../composables/useTema.js'
 import { useFormatadorValor } from '../../composables/useFormatadorValor.js'
-import { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from '../../composables/useExportarImagem.js'
-import { criarTooltipEl, clampHorizontal } from '../../composables/useTooltipExterno.js'
+import { useExportarCard } from '../../composables/useExportarImagem.js'
+import { criarTooltipEl } from '../../composables/useTooltipExterno.js'
+import { propsCartao, propsValor, propsDirecao } from '../../props.js'
 
 const props = defineProps({
-  legenda: { type: String, default: null },
-  sublegenda: { type: String, default: null },
-  titulo: { type: String, default: null },
-  descricao: { type: String, default: null },
-  tema: { type: String, default: 'light' },
-  corFundo: { type: String, default: null },
-  corTexto: { type: String, default: null },
-  corBorda: { type: String, default: '#EAE8E8' },
-  borderRadius: { type: [String, Number], default: '0.75rem' },
-  sombra: { type: String, default: '0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06)' },
+  ...propsCartao({ nomeArquivoExport: 'card-progresso.png' }),
+  ...propsValor(),
+  ...propsDirecao('top'),
   corDetalhes: { type: String, default: '#3B82F6' },
   corExcesso: { type: String, default: '#EF4444' },
-  textoBotao: { type: String, default: 'Ver mais' },
-  botaoVisivel: { type: Boolean, default: false },
-  direcao: {
-    type: String,
-    default: 'top',
-    validator: (v) => ['top', 'bottom', 'left', 'right'].includes(v),
-  },
   formato: {
     type: String,
     default: 'linear',
     validator: (v) => ['linear', 'circular'].includes(v),
   },
-  tipoValor: {
-    type: String,
-    default: 'numero',
-    validator: (v) => ['numero', 'moeda', 'percentual'].includes(v),
-  },
-  locale: { type: String, default: 'pt-BR' },
-  moeda: { type: String, default: 'BRL' },
   data: {
     type: Array,
     default: () => [
@@ -54,24 +36,13 @@ const props = defineProps({
   raioBarra: { type: [String, Number], default: '999px' },
   height: { type: [String, Number], default: 220 },
   cutout: { type: [String, Number], default: '78%' },
-  exportar: { type: Boolean, default: false },
-  nomeArquivoExport: { type: String, default: 'card-progresso.png' },
 })
 
 const emit = defineEmits(['botaoAcao', 'exportado'])
 
 const { palette, cardStyle } = useTema(props)
 const { formatar } = useFormatadorValor(props)
-const cardRef = ref(null)
-const iconeExportar = ICONE_EXPORTAR_SVG
-
-async function onExportar() {
-  await exportarElementoComoImagem(cardRef.value, {
-    nomeArquivo: props.nomeArquivoExport,
-    corFundo: palette.value.bg !== 'transparent' ? palette.value.bg : null,
-  })
-  emit('exportado')
-}
+const { cardRef, onExportar, iconeExportar } = useExportarCard(props, palette, emit)
 
 const layoutClass = computed(() => `card-progresso--${props.direcao}`)
 
@@ -105,8 +76,6 @@ const raioBarraCss = computed(() =>
   typeof props.raioBarra === 'number' ? `${props.raioBarra}px` : props.raioBarra
 )
 
-const totalQuantidade = computed(() => itens.value.reduce((s, i) => s + i.quantidade, 0))
-const totalMeta = computed(() => itens.value.reduce((s, i) => s + i.meta, 0))
 const percentualTotal = computed(() => {
   if (!itens.value.length) return 0
   return itens.value.reduce((s, item) => s + item.percentual, 0) / itens.value.length
@@ -165,7 +134,6 @@ function mostrarTooltipReducao(event) {
   el.style.left = '0px'
   el.style.top = '0px'
 
-  const ttWidth = el.offsetWidth
   const rect = event.currentTarget.getBoundingClientRect()
   const parentRect = parent.getBoundingClientRect()
 
@@ -195,51 +163,29 @@ function ocultarTooltipReducao() {
   const el = cardRef.value?.querySelector('.nc-tt')
   if (el) el.style.opacity = '0'
 }
-
-function onBotaoClick() {
-  emit('botaoAcao')
-}
 </script>
 
 <template>
-  <div ref="cardRef" class="card-progresso p-4 flex flex-column" :class="layoutClass" :style="cardStyle">
-    <div class="card-progresso__topo flex align-items-start justify-content-between gap-3">
-      <div v-if="$slots.legenda || legenda || $slots.sublegenda || sublegenda" class="nc-legendas-flex flex flex-column">
-        <div v-if="$slots.legenda || legenda" class="text-xs font-medium" :style="{ color: palette.text, opacity: 0.95 }">
-          <slot name="legenda">{{ legenda }}</slot>
-        </div>
-        <div v-if="$slots.sublegenda || sublegenda" class="text-xs" :style="{ color: palette.muted }">
-          <slot name="sublegenda">{{ sublegenda }}</slot>
-        </div>
-      </div>
-      <div v-if="$slots.actions || botaoVisivel || exportar" class="nc-actions inline-flex align-items-center gap-2">
-        <slot name="actions">
-          <button v-if="botaoVisivel" class="nc-btn inline-flex align-items-center"
-            :style="{ color: palette.text, borderColor: toRgba(palette.text, 0.18) }" @click="onBotaoClick">
-            <span>{{ textoBotao }}</span>
-          </button>
-        </slot>
-        <button v-if="exportar" type="button" class="nc-exportar inline-flex align-items-center justify-content-center"
-          :style="{ color: palette.muted, borderColor: toRgba(palette.text, 0.18) }"
-          title="Exportar como imagem" aria-label="Exportar como imagem"
-          @click="onExportar" v-html="iconeExportar"></button>
-      </div>
-    </div>
+  <div ref="cardRef" class="card-progresso nc-p-4 nc-flex nc-flex-column" :class="layoutClass" :style="cardStyle">
+    <CardCabecalho class="card-progresso__topo" :legenda="legenda" :sublegenda="sublegenda" :palette="palette"
+      :texto-botao="textoBotao" :botao-visivel="botaoVisivel" :exportar="exportar"
+      @botao-acao="emit('botaoAcao')" @exportar="onExportar">
+      <template v-if="$slots.legenda" #legenda><slot name="legenda" /></template>
+      <template v-if="$slots.sublegenda" #sublegenda><slot name="sublegenda" /></template>
+      <template v-if="$slots.actions" #actions><slot name="actions" /></template>
+    </CardCabecalho>
 
-    <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-progresso__titulos mt-3 mb-2 flex flex-column">
-      <div v-if="$slots.titulo || titulo" class="m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
-        <slot name="titulo">{{ titulo }}</slot>
-      </div>
-      <div v-if="$slots.descricao || descricao" class="text-sm mt-1" :style="{ color: palette.muted }">
-        <slot name="descricao">{{ descricao }}</slot>
-      </div>
-    </div>
+    <CardTitulos v-if="$slots.titulo || titulo || $slots.descricao || descricao"
+      class="card-progresso__titulos nc-mt-3 nc-mb-2" :titulo="titulo" :descricao="descricao" :palette="palette">
+      <template v-if="$slots.titulo" #titulo><slot name="titulo" /></template>
+      <template v-if="$slots.descricao" #descricao><slot name="descricao" /></template>
+    </CardTitulos>
 
-    <div class="card-progresso__corpo flex align-items-center flex-wrap">
-      <div v-if="formato === 'circular'" class="card-progresso__chart-wrap flex align-items-center justify-content-center">
+    <div class="card-progresso__corpo nc-flex nc-align-items-center nc-flex-wrap">
+      <div v-if="formato === 'circular'" class="card-progresso__chart-wrap nc-flex nc-align-items-center nc-justify-content-center">
         <div class="card-progresso__chart">
           <ChartBase type="doughnut" :data="chartData" :options="chartOptions" :height="height" />
-          <div class="nc-centro flex flex-column align-items-center justify-content-center">
+          <div class="nc-centro nc-flex nc-flex-column nc-align-items-center nc-justify-content-center">
             <div class="nc-centro-titulo" :style="{ color: reducaoTotal ? props.corExcesso : palette.text }">
               {{ Math.round(percentualTotal) }}%
             </div>
@@ -247,15 +193,15 @@ function onBotaoClick() {
         </div>
       </div>
 
-      <div class="card-progresso__lista flex flex-column">
-        <div v-for="(item, i) in itens" :key="i" class="card-progresso__item flex flex-column">
-          <div class="card-progresso__item-cab flex align-items-center justify-content-between">
-            <span class="card-progresso__item-rotulo inline-flex align-items-center gap-2" :style="{ color: palette.text }">
+      <div class="card-progresso__lista nc-flex nc-flex-column">
+        <div v-for="(item, i) in itens" :key="i" class="card-progresso__item nc-flex nc-flex-column">
+          <div class="card-progresso__item-cab nc-flex nc-align-items-center nc-justify-content-between">
+            <span class="card-progresso__item-rotulo nc-inline-flex nc-align-items-center nc-gap-2" :style="{ color: palette.text }">
               <span class="nc-bolinha" :style="{ background: item.cor }"></span>
               <span>{{ item.rotulo }}</span>
               <span v-if="item.reducao" class="card-progresso__item-modo" :style="{ color: palette.muted }" @mouseenter="mostrarTooltipReducao" @mouseleave="ocultarTooltipReducao">↓</span>
             </span>
-            <span v-if="mostrarValor || mostrarPercentual" class="card-progresso__item-valor inline-flex align-items-center gap-2">
+            <span v-if="mostrarValor || mostrarPercentual" class="card-progresso__item-valor nc-inline-flex nc-align-items-center nc-gap-2">
               <template v-if="mostrarValor">
                 <span class="card-progresso__item-nums" :style="{ color: palette.muted }">
                   {{ formatar(item.quantidade) }}<span v-if="item.meta"> / {{ formatar(item.meta) }}</span>
@@ -267,7 +213,7 @@ function onBotaoClick() {
               </span>
             </span>
           </div>
-          <div class="card-progresso__trilha w-full"
+          <div class="card-progresso__trilha nc-w-full"
             :style="{
               height: alturaBarraCss,
               borderRadius: raioBarraCss,
@@ -280,7 +226,7 @@ function onBotaoClick() {
       </div>
     </div>
 
-    <div v-if="$slots.footer" class="card-progresso__footer mt-3">
+    <div v-if="$slots.footer" class="card-progresso__footer nc-mt-3">
       <slot name="footer" />
     </div>
   </div>
@@ -295,13 +241,6 @@ function onBotaoClick() {
   transition: background 0.2s ease;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
-}
-
-.card-progresso__topo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
 }
 
 .card-progresso__corpo {
@@ -477,7 +416,6 @@ function onBotaoClick() {
   height: 100%;
   transition: width 0.4s ease;
 }
-
 </style>
 
 <style>

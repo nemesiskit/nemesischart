@@ -17,7 +17,16 @@
       "Bash(npm whoami *)",
       "Bash(npm publish *)",
       "PowerShell(Get-ChildItem \"c:\\\\Users\\\\neemi\\\\Documents\\\\GitHub\\\\nemesischart\" -Name | Where-Object { $_ -notmatch \"^node_modules\" })",
-      "PowerShell(npm run build:lib 2>&1)"
+      "PowerShell(npm run build:lib 2>&1)",
+      "PowerShell(npm run build:app 2>&1)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "PowerShell(npm run dev)",
+      "PowerShell($chrome = @\\(\"$env:ProgramFiles\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\", \"${env:ProgramFiles\\(x86\\)}\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\", \"$env:ProgramFiles\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\", \"${env:ProgramFiles\\(x86\\)}\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"\\) | Where-Object { Test-Path $_ } | Select-Object -First 1; Write-Output \"Browser: $chrome\")",
+      "PowerShell($edge = \"${env:ProgramFiles\\(x86\\)}\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; $out = \"$env:TEMP\\\\nemesis-shots\"; New-Item -ItemType Directory -Force $out | Out-Null; & $edge --headless --disable-gpu --window-size=1400,2200 --screenshot=\"$out\\\\playground.png\" --virtual-time-budget=8000 \"http://localhost:5174/playground\" 2>$null; Start-Sleep -Seconds 2; & $edge --headless --disable-gpu --window-size=1400,2600 --screenshot=\"$out\\\\docs.png\" --virtual-time-budget=8000 \"http://localhost:5174/docs\" 2>$null; Start-Sleep -Seconds 2; Get-ChildItem $out | Select-Object Name, Length)",
+      "PowerShell(Select-String -Path \"node_modules\\\\primevue\\\\resources\\\\primevue.min.css\" -Pattern \"box-sizing\" | Select-Object -First 3 | ForEach-Object { $_.Line.Substring\\(0, [Math]::Min\\(200, $_.Line.Length\\)\\) })",
+      "PowerShell($edge = \"${env:ProgramFiles\\(x86\\)}\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; $out = \"$env:TEMP\\\\nemesis-shots\"; & $edge --headless=new --disable-gpu --user-data-dir=\"$env:TEMP\\\\edge-prof-nc\" --window-size=1400,2000 --screenshot=\"$out\\\\playground2.png\" --virtual-time-budget=8000 \"http://localhost:5174/playground\" | Out-Null; Get-ChildItem $out | Select-Object Name, LastWriteTime)",
+      "PowerShell($edge = \"${env:ProgramFiles\\(x86\\)}\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; $out = \"$env:TEMP\\\\nemesis-shots\"; & $edge --headless=new --disable-gpu --user-data-dir=\"$env:TEMP\\\\edge-prof-nc\" --window-size=1400,2400 --screenshot=\"$out\\\\docs2.png\" --virtual-time-budget=8000 \"http://localhost:5174/#/docs\" | Out-Null; & $edge --headless=new --disable-gpu --user-data-dir=\"$env:TEMP\\\\edge-prof-nc\" --window-size=1400,1400 --screenshot=\"$out\\\\dashboard.png\" --virtual-time-budget=8000 \"http://localhost:5174/#/dashboard\" | Out-Null; Get-ChildItem $out | Select-Object Name, LastWriteTime)"
     ]
   }
 }

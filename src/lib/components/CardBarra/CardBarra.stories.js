@@ -7,7 +7,8 @@ function gerarDadosAleatorios() {
   return ROTULOS.map((rotulo) => ({ rotulo, quantidade: Math.floor(Math.random() * 5000000) }))
 }
 
-const sampleData = [
+// Faturamento mensal (R$) — ano em andamento, total ≈ R$ 11M.
+const faturamentoMensal = [
   { rotulo: 'Jan', quantidade: 1186451.5 },
   { rotulo: 'Fev', quantidade: 2810076.48 },
   { rotulo: 'Mar', quantidade: 3247974.14 },
@@ -20,6 +21,30 @@ const sampleData = [
   { rotulo: 'Out', quantidade: 0 },
   { rotulo: 'Nov', quantidade: 0 },
   { rotulo: 'Dez', quantidade: 0 },
+]
+
+// Duas séries (online x loja) reaproveitadas em agrupado/empilhado.
+const vendasPorCanal = [
+  {
+    nome: 'Online',
+    cor: '#3B82F6',
+    dados: [
+      { rotulo: 'Jan', quantidade: 120 },
+      { rotulo: 'Fev', quantidade: 150 },
+      { rotulo: 'Mar', quantidade: 180 },
+      { rotulo: 'Abr', quantidade: 200 },
+    ],
+  },
+  {
+    nome: 'Loja',
+    cor: '#10B981',
+    dados: [
+      { rotulo: 'Jan', quantidade: 80 },
+      { rotulo: 'Fev', quantidade: 90 },
+      { rotulo: 'Mar', quantidade: 110 },
+      { rotulo: 'Abr', quantidade: 130 },
+    ],
+  },
 ]
 
 export default {
@@ -43,6 +68,11 @@ export default {
     botaoVisivel: { control: { type: 'boolean' } },
     exportar: { control: { type: 'boolean' } },
     nomeArquivoExport: { control: { type: 'text' } },
+    detalheTooltip: {
+      control: false,
+      description:
+        'Função `(item, index) => string | string[]`. Recebe o item original (da 1ª série em `data`/`series`) e o índice, e retorna texto(s) extra(s) exibidos no tooltip abaixo dos valores. Use para um detalhe por categoria (ex.: variação, meta, observação).',
+    },
     botaoAcao: { action: 'botaoAcao' },
     exportado: { action: 'exportado' },
   },
@@ -69,82 +99,44 @@ export default {
     orientacao: 'vertical',
     empilhado: false,
     height: 280,
-    data: sampleData,
+    data: faturamentoMensal,
   },
 }
 
-export const Light = { args: { tema: 'light' } }
-export const Dark = { args: { tema: 'dark' } }
-export const Transparent = { args: { tema: 'transparent' } }
+/**
+ * Exemplo canônico (faturamento mensal, moeda). Use os controles (tema,
+ * orientação, empilhado, largura/raio da barra, direção, borda, sombra…) para
+ * explorar as variações sem precisar de stories dedicadas.
+ */
+export const Padrao = {}
 
-export const Moeda = {
-  args: { tema: 'light', tipoValor: 'moeda', titulo: 'R$ 3,5M', descricao: 'pico em abril' },
+/** Tema escuro. */
+export const Escuro = { args: { tema: 'dark' } }
+
+/** Tema transparente — sem fundo/sombra, para compor dentro de outro container. */
+export const Transparente = {
+  args: { tema: 'transparent', sombra: 'none', corBorda: 'transparent' },
 }
 
-export const Numero = {
-  args: { tema: 'light', tipoValor: 'numero', titulo: '11.000.211', descricao: 'unidades' },
-}
-
-export const Percentual = {
+/** `tipoValor="numero"` — contagem por categoria. */
+export const Contagem = {
   args: {
-    tema: 'light',
-    tipoValor: 'percentual',
-    titulo: '78%',
+    legenda: 'Vendas por canal',
+    titulo: '12.450',
+    descricao: 'unidades',
+    tipoValor: 'numero',
+    corDetalhes: '#10B981',
     data: [
-      { rotulo: 'Jan', quantidade: 12 },
-      { rotulo: 'Fev', quantidade: 25 },
-      { rotulo: 'Mar', quantidade: 40 },
-      { rotulo: 'Abr', quantidade: 55 },
-      { rotulo: 'Mai', quantidade: 78 },
+      { rotulo: 'Site', quantidade: 4200 },
+      { rotulo: 'App', quantidade: 3100 },
+      { rotulo: 'Marketplace', quantidade: 2450 },
+      { rotulo: 'Loja física', quantidade: 1800 },
+      { rotulo: 'Parceiros', quantidade: 900 },
     ],
   },
 }
 
-export const CorDeTextoCustomizada = {
-  args: {
-    tema: 'light',
-    corTexto: '#7C3AED',
-  },
-}
-
-export const DirecaoBottom = { args: { direcao: 'bottom' } }
-export const DirecaoLeft = { args: { direcao: 'left' } }
-export const DirecaoRight = { args: { direcao: 'right' } }
-
-export const ComBotao = {
-  args: { tema: 'dark', botaoVisivel: true, textoBotao: 'Ver detalhes' },
-}
-
-export const ComExportar = {
-  args: { exportar: true, nomeArquivoExport: 'faturamento.png' },
-}
-
-export const ComBotaoEExportar = {
-  args: { botaoVisivel: true, textoBotao: 'Ver detalhes', exportar: true },
-}
-
-export const BordaCustomizada = {
-  args: {
-    corBorda: '#3B82F6',
-    borderRadius: '24px',
-  },
-}
-
-export const SemSombra = {
-  args: {
-    sombra: 'none',
-    corBorda: '#EAE8E8',
-  },
-}
-
-export const SombraForte = {
-  args: {
-    sombra: '0 10px 30px rgba(15, 23, 42, 0.18)',
-    corBorda: 'transparent',
-    borderRadius: '20px',
-  },
-}
-
+/** `orientacao="horizontal"` — barras deitadas, útil para rótulos longos. */
 export const Horizontal = {
   args: {
     orientacao: 'horizontal',
@@ -162,170 +154,49 @@ export const Horizontal = {
   },
 }
 
+/** Múltiplas séries lado a lado (prop `series`). */
 export const SeriesAgrupadas = {
+  name: 'Séries agrupadas',
   args: {
     legenda: 'Vendas por canal',
     sublegenda: 'trimestre',
     titulo: 'Online x Loja',
     descricao: 'comparativo trimestral',
     tipoValor: 'numero',
-    series: [
-      {
-        nome: 'Online',
-        cor: '#3B82F6',
-        dados: [
-          { rotulo: 'Jan', quantidade: 120 },
-          { rotulo: 'Fev', quantidade: 150 },
-          { rotulo: 'Mar', quantidade: 180 },
-          { rotulo: 'Abr', quantidade: 200 },
-        ],
-      },
-      {
-        nome: 'Loja',
-        cor: '#10B981',
-        dados: [
-          { rotulo: 'Jan', quantidade: 80 },
-          { rotulo: 'Fev', quantidade: 90 },
-          { rotulo: 'Mar', quantidade: 110 },
-          { rotulo: 'Abr', quantidade: 130 },
-        ],
-      },
-    ],
+    series: vendasPorCanal,
   },
 }
 
+/** Séries empilhadas (`empilhado`) — composição do total por categoria. */
 export const SeriesEmpilhadas = {
+  name: 'Séries empilhadas',
   args: {
-    legenda: 'Receita por categoria',
-    titulo: 'Empilhado',
-    tipoValor: 'moeda',
-    empilhado: true,
-    series: [
-      {
-        nome: 'Produtos',
-        cor: '#3B82F6',
-        dados: [
-          { rotulo: 'Jan', quantidade: 1200 },
-          { rotulo: 'Fev', quantidade: 1500 },
-          { rotulo: 'Mar', quantidade: 1800 },
-          { rotulo: 'Abr', quantidade: 2000 },
-        ],
-      },
-      {
-        nome: 'Serviços',
-        cor: '#10B981',
-        dados: [
-          { rotulo: 'Jan', quantidade: 800 },
-          { rotulo: 'Fev', quantidade: 900 },
-          { rotulo: 'Mar', quantidade: 1100 },
-          { rotulo: 'Abr', quantidade: 1300 },
-        ],
-      },
-      {
-        nome: 'Assinaturas',
-        cor: '#F59E0B',
-        dados: [
-          { rotulo: 'Jan', quantidade: 400 },
-          { rotulo: 'Fev', quantidade: 500 },
-          { rotulo: 'Mar', quantidade: 600 },
-          { rotulo: 'Abr', quantidade: 700 },
-        ],
-      },
-    ],
-  },
-}
-
-export const SeriesHorizontalEmpilhadas = {
-  args: {
-    orientacao: 'horizontal',
-    empilhado: true,
-    legenda: 'Distribuição por região',
-    titulo: 'Mix de canais',
+    legenda: 'Vendas por canal',
+    sublegenda: 'trimestre',
+    titulo: 'Online + Loja',
     tipoValor: 'numero',
-    series: [
-      {
-        nome: 'Online',
-        cor: '#3B82F6',
-        dados: [
-          { rotulo: 'Sul', quantidade: 320 },
-          { rotulo: 'Sudeste', quantidade: 540 },
-          { rotulo: 'Centro', quantidade: 210 },
-          { rotulo: 'Nordeste', quantidade: 380 },
-          { rotulo: 'Norte', quantidade: 150 },
-        ],
-      },
-      {
-        nome: 'Loja',
-        cor: '#10B981',
-        dados: [
-          { rotulo: 'Sul', quantidade: 180 },
-          { rotulo: 'Sudeste', quantidade: 290 },
-          { rotulo: 'Centro', quantidade: 120 },
-          { rotulo: 'Nordeste', quantidade: 200 },
-          { rotulo: 'Norte', quantidade: 80 },
-        ],
-      },
-    ],
+    empilhado: true,
+    series: vendasPorCanal,
   },
 }
 
-export const LinhaReferencia = {
-  name: 'Linha de referência (simples)',
-  args: {
-    legenda: 'Horas trabalhadas',
-    sublegenda: 'semana atual',
-    titulo: null,
-    descricao: null,
-    tipoValor: 'numero',
-    corDetalhes: '#7C3AED',
-    data: [
-      { rotulo: 'Seg', quantidade: 3.5 },
-      { rotulo: 'Ter', quantidade: 5.2 },
-      { rotulo: 'Qua', quantidade: 7.8 },
-      { rotulo: 'Qui', quantidade: 4.6 },
-      { rotulo: 'Sex', quantidade: 6.1 },
-    ],
-    linhasReferencia: { valor: 4.2, rotulo: '4.2 hours' },
-  },
-}
-
-export const LinhaReferenciaApenasValor = {
-  name: 'Linha sem rótulo (só valor)',
-  args: {
-    legenda: 'Receita diária',
-    sublegenda: 'últimos 7 dias',
-    titulo: null,
-    descricao: null,
-    tipoValor: 'moeda',
-    corDetalhes: '#0EA5E9',
-    data: [
-      { rotulo: 'Seg', quantidade: 8400 },
-      { rotulo: 'Ter', quantidade: 11200 },
-      { rotulo: 'Qua', quantidade: 9800 },
-      { rotulo: 'Qui', quantidade: 14500 },
-      { rotulo: 'Sex', quantidade: 17200 },
-      { rotulo: 'Sáb', quantidade: 6900 },
-      { rotulo: 'Dom', quantidade: 4300 },
-    ],
-    linhasReferencia: 10000,
-  },
-}
-
-export const LinhaReferenciaMeta = {
-  name: 'Linha como meta (verde)',
+/** Linha de referência simples como meta. */
+export const LinhaDeReferencia = {
+  name: 'Com linha de referência',
   args: {
     legenda: 'Vendas',
     sublegenda: '2026',
-    titulo: 'R$ 11M',
-    descricao: 'acumulado no ano',
+    titulo: null,
+    descricao: null,
     tipoValor: 'moeda',
     corDetalhes: '#3B82F6',
     linhasReferencia: { valor: 2500000, rotulo: 'Meta mensal', cor: '#10B981' },
   },
 }
 
-export const LinhaReferenciaMultipla = {
-  name: 'Múltiplas linhas (meta + stretch)',
+/** Múltiplas referências (meta + stretch), com estilos distintos. */
+export const MultiplasReferencias = {
+  name: 'Múltiplas referências',
   args: {
     legenda: 'Faturamento vs metas',
     sublegenda: '2026',
@@ -333,146 +204,8 @@ export const LinhaReferenciaMultipla = {
     descricao: null,
     tipoValor: 'moeda',
     linhasReferencia: [
-      { valor: 2000000, rotulo: 'Meta', cor: '#10B981' },
-      { valor: 3500000, rotulo: 'Stretch', cor: '#EF4444' },
-    ],
-  },
-}
-
-export const LinhaReferenciaTema = {
-  name: 'Linha em tema escuro',
-  args: {
-    tema: 'dark',
-    legenda: 'Horas trabalhadas',
-    sublegenda: 'semana atual',
-    titulo: null,
-    descricao: null,
-    tipoValor: 'numero',
-    corDetalhes: '#7C3AED',
-    data: [
-      { rotulo: 'Seg', quantidade: 3.5 },
-      { rotulo: 'Ter', quantidade: 5.2 },
-      { rotulo: 'Qua', quantidade: 7.8 },
-      { rotulo: 'Qui', quantidade: 4.6 },
-      { rotulo: 'Sex', quantidade: 6.1 },
-    ],
-    linhasReferencia: { valor: 4.2, rotulo: '4.2 hours', cor: '#F8FAFC', corRotulo: '#F8FAFC', corTexto: '#0F172A' },
-  },
-}
-
-export const LinhaReferenciaEstilos = {
-  name: 'Estilos de linha (tracejado, espessura)',
-  args: {
-    legenda: 'Métricas',
-    sublegenda: 'mensal',
-    titulo: null,
-    descricao: null,
-    tipoValor: 'numero',
-    data: [
-      { rotulo: 'Jan', quantidade: 45 },
-      { rotulo: 'Fev', quantidade: 62 },
-      { rotulo: 'Mar', quantidade: 38 },
-      { rotulo: 'Abr', quantidade: 84 },
-      { rotulo: 'Mai', quantidade: 71 },
-      { rotulo: 'Jun', quantidade: 56 },
-    ],
-    linhasReferencia: [
-      { valor: 30, rotulo: 'Mín', cor: '#EF4444', tracejado: [2, 4], espessura: 1 },
-      { valor: 60, rotulo: 'Média', cor: '#0F172A', tracejado: [6, 6], espessura: 1 },
-      { valor: 90, rotulo: 'Topo', cor: '#10B981', tracejado: [12, 4], espessura: 2 },
-    ],
-  },
-}
-
-export const LinhaReferenciaHorizontal = {
-  name: 'Linha em barra horizontal',
-  args: {
-    orientacao: 'horizontal',
-    legenda: 'Vendas por canal',
-    sublegenda: '2026',
-    titulo: null,
-    descricao: null,
-    tipoValor: 'numero',
-    data: [
-      { rotulo: 'Site', quantidade: 4200 },
-      { rotulo: 'App', quantidade: 3100 },
-      { rotulo: 'Marketplace', quantidade: 2450 },
-      { rotulo: 'Loja física', quantidade: 1800 },
-      { rotulo: 'Parceiros', quantidade: 900 },
-    ],
-    linhasReferencia: { valor: 2500, rotulo: 'Meta' },
-  },
-}
-
-export const LinhaReferenciaSeries = {
-  name: 'Linha em barras agrupadas',
-  args: {
-    legenda: 'Vendas por canal',
-    sublegenda: 'trimestre',
-    titulo: null,
-    descricao: null,
-    tipoValor: 'numero',
-    series: [
-      {
-        nome: 'Online',
-        cor: '#3B82F6',
-        dados: [
-          { rotulo: 'Jan', quantidade: 120 },
-          { rotulo: 'Fev', quantidade: 150 },
-          { rotulo: 'Mar', quantidade: 180 },
-          { rotulo: 'Abr', quantidade: 200 },
-        ],
-      },
-      {
-        nome: 'Loja',
-        cor: '#10B981',
-        dados: [
-          { rotulo: 'Jan', quantidade: 80 },
-          { rotulo: 'Fev', quantidade: 90 },
-          { rotulo: 'Mar', quantidade: 110 },
-          { rotulo: 'Abr', quantidade: 130 },
-        ],
-      },
-    ],
-    linhasReferencia: { valor: 150, rotulo: 'Meta', cor: '#EF4444' },
-  },
-}
-
-export const LinhaReferenciaInterativa = {
-  name: 'Linha de referência interativa',
-  render: (args) => ({
-    components: { CardBarra },
-    setup() {
-      const meta = ref(50)
-      return { args, meta }
-    },
-    template: `
-      <div style="display:flex;flex-direction:column;gap:1rem;">
-        <label style="display:flex;align-items:center;gap:0.75rem;font-family:'Inter',sans-serif;font-size:0.85rem;">
-          Meta:
-          <input type="range" min="0" max="100" v-model.number="meta" style="flex:1;max-width:300px;" />
-          <span style="font-variant-numeric:tabular-nums;font-weight:600;min-width:3ch;">{{ meta }}</span>
-        </label>
-        <CardBarra
-          v-bind="args"
-          :linhas-referencia="{ valor: meta, rotulo: meta + '%' }"
-        />
-      </div>
-    `,
-  }),
-  args: {
-    legenda: 'Conversão por etapa',
-    sublegenda: 'funil de vendas',
-    titulo: null,
-    descricao: null,
-    tipoValor: 'percentual',
-    corDetalhes: '#7C3AED',
-    data: [
-      { rotulo: 'Visita', quantidade: 100 },
-      { rotulo: 'Cadastro', quantidade: 62 },
-      { rotulo: 'Carrinho', quantidade: 38 },
-      { rotulo: 'Checkout', quantidade: 21 },
-      { rotulo: 'Pago', quantidade: 14 },
+      { valor: 2000000, rotulo: 'Meta', cor: '#10B981', tracejado: [6, 6] },
+      { valor: 3500000, rotulo: 'Stretch', cor: '#EF4444', tracejado: [2, 4] },
     ],
   },
 }
@@ -484,16 +217,14 @@ const faturamentoEndpoint = [
   { rotulo: 'Abr', total_previsto: 8388918.21, total_recebido: 1550230.43, total_em_aberto: 6838687.78 },
   { rotulo: 'Mai', total_previsto: 20257325.12, total_recebido: 17870993, total_em_aberto: 2386332.12 },
   { rotulo: 'Jun', total_previsto: 7878621.99, total_recebido: 0, total_em_aberto: 7878621.99 },
-  { rotulo: 'Jul', total_previsto: 7568323.25, total_recebido: 0, total_em_aberto: 7568323.25 },
-  { rotulo: 'Ago', total_previsto: 935804.93, total_recebido: 0, total_em_aberto: 935804.93 },
-  { rotulo: 'Set', total_previsto: 3496123.12, total_recebido: 0, total_em_aberto: 3496123.12 },
-  { rotulo: 'Out', total_previsto: 701351.0, total_recebido: 30000, total_em_aberto: 671351.0 },
-  { rotulo: 'Nov', total_previsto: 505217.44, total_recebido: 0, total_em_aberto: 505217.44 },
-  { rotulo: 'Dez', total_previsto: 4186451.22, total_recebido: 0, total_em_aberto: 4186451.22 },
 ]
 
-export const FaturamentoPrevistoVsRecebido = {
-  name: 'Faturamento (previsto no tooltip)',
+/**
+ * Campo `previsto` por item — quando presente nos dados, aparece como uma linha
+ * "Previsto" no rodapé do tooltip, separada por um divisor tracejado.
+ */
+export const PrevistoNoTooltip = {
+  name: 'Previsto no tooltip',
   args: {
     legenda: 'Faturamento',
     sublegenda: '2026',
@@ -525,12 +256,54 @@ export const FaturamentoPrevistoVsRecebido = {
   },
 }
 
-export const DadosAleatorios = {
+/**
+ * `detalheTooltip` acrescenta linha(s) de texto no tooltip, abaixo dos valores
+ * (e do "Previsto", quando houver).
+ *
+ * **Como definir:** passe uma função que recebe o item original (da 1ª série de
+ * `data`/`series`) e o índice, e devolve uma string — ou um array de strings
+ * para várias linhas. Os campos extras precisam existir em cada item.
+ *
+ * ```vue
+ * <CardBarra
+ *   :data="[
+ *     { rotulo: 'Jan', quantidade: 1353, variacao: '+8% vs dez' },
+ *     { rotulo: 'Fev', quantidade: 1269, variacao: '-6% vs jan' },
+ *   ]"
+ *   :detalheTooltip="(item) => item.variacao"
+ * />
+ * ```
+ */
+export const DetalheTooltip = {
+  name: 'Detalhe no tooltip',
+  args: {
+    legenda: 'Pagamentos realizados',
+    sublegenda: '2026',
+    titulo: null,
+    descricao: 'quantidade por mês, com variação no tooltip',
+    tipoValor: 'numero',
+    corDetalhes: '#1E40AF',
+    data: [
+      { rotulo: 'Jan', quantidade: 1353, variacao: '+8% vs dez' },
+      { rotulo: 'Fev', quantidade: 1269, variacao: '−6% vs jan' },
+      { rotulo: 'Mar', quantidade: 2162, variacao: '+70% vs fev' },
+      { rotulo: 'Abr', quantidade: 2401, variacao: '+11% vs mar' },
+      { rotulo: 'Mai', quantidade: 3690, variacao: '+54% vs abr' },
+      { rotulo: 'Jun', quantidade: 2501, variacao: '−32% vs mai' },
+    ],
+    detalheTooltip: (item) => item.variacao,
+  },
+}
+
+/** Interativo — regenera os dados para visualizar a transição das barras. */
+export const Interativo = {
   render: (args) => ({
     components: { CardBarra },
     setup() {
       const localData = ref(gerarDadosAleatorios())
-      const gerar = () => { localData.value = gerarDadosAleatorios() }
+      const gerar = () => {
+        localData.value = gerarDadosAleatorios()
+      }
       return { args, localData, gerar }
     },
     template: `

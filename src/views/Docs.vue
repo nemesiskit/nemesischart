@@ -22,23 +22,17 @@ const exemploProgresso = [
 <template>
   <div class="docs">
     <h2 class="text-2xl font-bold mb-1">Documentação</h2>
-    <p class="text-sm mb-4" style="color:#64748B">Componentes Vue 3 para charts construídos sobre Chart.js, PrimeVue e PrimeFlex.</p>
+    <p class="text-sm mb-4" style="color:#64748B">Componentes Vue 3 para charts construídos sobre Chart.js — sem dependências de UI externas.</p>
 
     <section class="docs__section">
       <h3>Instalação</h3>
-      <pre><code>npm install nemesischart chart.js primevue primeflex primeicons</code></pre>
+      <pre><code>npm install nemesischart chart.js</code></pre>
       <h4>Registro como plugin</h4>
       <pre><code>import { createApp } from 'vue'
-import PrimeVue from 'primevue/config'
 import NemesisChart from 'nemesischart'
 import 'nemesischart/style.css'
 
-import 'primevue/resources/themes/lara-light-blue/theme.css'
-import 'primeicons/primeicons.css'
-import 'primeflex/primeflex.css'
-
 createApp(App)
-  .use(PrimeVue)
   .use(NemesisChart)
   .mount('#app')</code></pre>
 
@@ -110,7 +104,7 @@ createApp(App)
 
     <section class="docs__section">
       <h3>CardPizza</h3>
-      <p>Gráfico doughnut. Props específicas: <code>cores</code> (array), <code>cutout</code> (tamanho do furo, ex.: <code>'70%'</code>), <code>rotuloCategoria</code>, <code>rotuloQuantidade</code>.</p>
+      <p>Gráfico doughnut. Props específicas: <code>cutout</code> (tamanho do furo, ex.: <code>'70%'</code>), <code>rotuloCategoria</code>, <code>rotuloQuantidade</code>, <code>itensClicaveis</code>. A paleta das fatias é gerada a partir de <code>corDetalhes</code>; cada item pode sobrescrever com <code>cor</code>.</p>
       <div class="docs__demo">
         <CardPizza legenda="Dispositivos" titulo="100%" tipoValor="percentual" :data="exemploPizza" />
       </div>
@@ -118,7 +112,7 @@ createApp(App)
 
     <section class="docs__section">
       <h3>CardPolar</h3>
-      <p>Gráfico polar area. Props específicas: <code>cores</code>, <code>mostrarLinhasGrade</code>.</p>
+      <p>Gráfico polar area. Props específicas: <code>mostrarLinhasGrade</code>, <code>itensClicaveis</code>. A paleta segue a mesma regra do CardPizza (<code>corDetalhes</code> + <code>cor</code> por item).</p>
       <div class="docs__demo">
         <CardPolar legenda="Receita" titulo="R$ 11k" tipoValor="moeda" :data="exemploPolar" />
       </div>

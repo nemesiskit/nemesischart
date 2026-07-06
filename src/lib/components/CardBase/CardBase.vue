@@ -1,79 +1,62 @@
 <script setup>
-import { ref } from 'vue'
 import { useTema, toRgba } from '../../composables/useTema.js'
-import { exportarElementoComoImagem, ICONE_EXPORTAR_SVG } from '../../composables/useExportarImagem.js'
+import { useExportarCard } from '../../composables/useExportarImagem.js'
+import { propsCartao } from '../../props.js'
 
 const props = defineProps({
-  legenda: { type: String, default: null },
-  sublegenda: { type: String, default: null },
-  titulo: { type: String, default: null },
-  descricao: { type: String, default: null },
-  tema: { type: String, default: 'light' },
-  corFundo: { type: String, default: null },
-  corTexto: { type: String, default: null },
-  corBorda: { type: String, default: '#EAE8E8' },
-  borderRadius: { type: [String, Number], default: '0.75rem' },
-  sombra: { type: String, default: 'none' },
-  textoBotao: { type: String, default: 'Ver Todos' },
-  botaoVisivel: { type: Boolean, default: true },
+  ...propsCartao({
+    sombra: 'none',
+    textoBotao: 'Ver Todos',
+    botaoVisivel: true,
+    nomeArquivoExport: 'card-base.png',
+  }),
   alinhamento: {
     type: String,
     default: 'left',
     validator: (v) => ['left', 'center', 'right'].includes(v),
   },
-  exportar: { type: Boolean, default: false },
-  nomeArquivoExport: { type: String, default: 'card-base.png' },
 })
 
 const emit = defineEmits(['botaoAcao', 'exportado'])
 
 const { palette, cardStyle } = useTema(props)
-const cardRef = ref(null)
-const iconeExportar = ICONE_EXPORTAR_SVG
+const { cardRef, onExportar, iconeExportar } = useExportarCard(props, palette, emit)
 
 function onBotaoClick() {
   emit('botaoAcao')
 }
-
-async function onExportar() {
-  await exportarElementoComoImagem(cardRef.value, {
-    nomeArquivo: props.nomeArquivoExport,
-    corFundo: palette.value.bg !== 'transparent' ? palette.value.bg : null,
-  })
-  emit('exportado')
-}
 </script>
 
 <template>
-  <div ref="cardRef" class="card-base flex flex-column" :class="`card-base--${alinhamento}`" :style="cardStyle">
+  <div ref="cardRef" class="card-base nc-flex nc-flex-column" :class="`card-base--${alinhamento}`" :style="cardStyle">
     <div v-if="exportar" class="card-base__topo">
-      <button type="button" class="nc-exportar card-base__exportar inline-flex align-items-center justify-content-center"
+      <button type="button" class="nc-exportar card-base__exportar nc-inline-flex nc-align-items-center nc-justify-content-center"
         :style="{ color: palette.muted, borderColor: toRgba(palette.text === 'inherit' ? '#0F172A' : palette.text, 0.18) }"
         title="Exportar como imagem" aria-label="Exportar como imagem"
         @click="onExportar" v-html="iconeExportar"></button>
     </div>
 
-    <div class="card-base__legendas flex flex-column">
-      <div v-if="$slots.legenda || legenda" class="card-base__legenda font-medium text-xs" :style="{ color: palette.text }">
+    <div class="card-base__legendas nc-flex nc-flex-column">
+      <div v-if="$slots.legenda || legenda" class="card-base__legenda nc-font-medium nc-text-xs" :style="{ color: palette.text }">
         <slot name="legenda">{{ legenda }}</slot>
       </div>
-      <div v-if="$slots.sublegenda || sublegenda" class="card-base__sublegenda text-xs" :style="{ color: palette.muted }">
+      <div v-if="$slots.sublegenda || sublegenda" class="card-base__sublegenda nc-text-xs" :style="{ color: palette.muted }">
         <slot name="sublegenda">{{ sublegenda }}</slot>
       </div>
     </div>
 
-    <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-base__titulos flex flex-column">
-      <div v-if="$slots.titulo || titulo" class="card-base__titulo m-0 text-3xl font-semibold  " :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
+    <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-base__titulos nc-flex nc-flex-column">
+      <div v-if="$slots.titulo || titulo" class="card-base__titulo nc-m-0 nc-text-3xl nc-font-semibold" :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
         <slot name="titulo">{{ titulo }}</slot>
       </div>
-      <div v-if="$slots.descricao || descricao" class="text-sm" :style="{ color: palette.muted }">
+      <div v-if="$slots.descricao || descricao" class="nc-text-sm" :style="{ color: palette.muted }">
         <slot name="descricao">{{ descricao }}</slot>
       </div>
     </div>
 
-    <div v-if="$slots.acao || botaoVisivel" class="card-base__acao flex">
+    <div v-if="$slots.acao || botaoVisivel" class="card-base__acao nc-flex">
       <slot name="acao">
-        <button v-if="botaoVisivel" type="button" class="card-base__link text-xs inline-flex align-items-center"
+        <button v-if="botaoVisivel" type="button" class="card-base__link nc-text-xs nc-inline-flex nc-align-items-center"
           :style="{ color: palette.text }" @click="onBotaoClick">
           <span>{{ textoBotao }}</span>
           <span class="card-base__chevron" aria-hidden="true">›</span>
@@ -138,8 +121,6 @@ async function onExportar() {
   line-height: 1.15;
   letter-spacing: -0.015em;
 }
-
-
 
 .card-base__acao {
   display: flex;
