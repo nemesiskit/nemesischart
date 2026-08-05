@@ -33,6 +33,8 @@ const props = defineProps({
     ],
   },
   height: { type: [String, Number], default: 280 },
+  // Curvatura da linha (0 = reta/segmentos retos, 1 = bem arredondada).
+  tension: { type: Number, default: 0.45 },
   linhasReferencia: { type: [Object, Array], default: null },
   // Recebe o item original de `data` e retorna texto(s) extra(s) exibidos no
   // tooltip abaixo do valor. Pode devolver uma string ou um array de strings.
@@ -75,7 +77,7 @@ const chartData = computed(() => ({
         return gradient
       },
       fill: true,
-      tension: 0.45,
+      tension: Math.min(Math.max(props.tension, 0), 1),
       pointRadius: 0,
       pointHoverRadius: 6,
       pointHoverBorderWidth: 3,

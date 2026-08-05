@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, useSlots } from 'vue'
 import ChartBase from '../ChartBase/ChartBase.vue'
 import CardCabecalho from '../internos/CardCabecalho.vue'
 import TabelaDados from '../internos/TabelaDados.vue'
@@ -29,6 +29,8 @@ const props = defineProps({
   },
   height: { type: [String, Number], default: 260 },
   mostrarLinhasGrade: { type: Boolean, default: true },
+  // Esconde o gráfico e deixa apenas a tabela (título/descrição continuam visíveis).
+  mostrarGrafico: { type: Boolean, default: true },
   // Recebe o item original de `data` e retorna texto(s) extra(s) exibidos no
   // tooltip abaixo do valor. Pode devolver uma string ou um array de strings.
   detalheTooltip: { type: Function, default: null },
@@ -41,6 +43,13 @@ const { formatar } = useFormatadorValor(props)
 const { cardRef, onExportar, iconeExportar } = useExportarCard(props, palette, emit)
 
 const layoutClass = computed(() => `card-polar--${props.direcao}`)
+
+const slots = useSlots()
+const temCentro = computed(
+  () => Boolean(slots.titulo || props.titulo || slots.descricao || props.descricao),
+)
+// sem gráfico e sem título/descrição, a coluna lateral inteira sai do layout
+const mostrarLateral = computed(() => props.mostrarGrafico || temCentro.value)
 
 const coresAplicadas = computed(() => {
   const paleta = gerarPaleta(props.corDetalhes, props.data.length)
@@ -134,10 +143,12 @@ const chartOptions = computed(() => ({
         :mostrar-cabecalho="mostrarCabecalho" :itens-clicaveis="itensClicaveis" :tooltip-linha="tooltipLinha"
         pad-ativa="0.25rem" v-model:hover-index="hoverIndex" @item-clicado="emitirItem" />
 
-      <div class="card-polar__chart-wrap nc-flex nc-align-items-center nc-justify-content-center">
+      <div v-if="mostrarLateral" class="card-polar__chart-wrap nc-flex nc-align-items-center nc-justify-content-center"
+        :class="{ 'card-polar__chart-wrap--sem-grafico': !mostrarGrafico }">
         <div class="card-polar__chart">
-          <ChartBase type="polarArea" :data="chartData" :options="chartOptions" :height="height" />
-          <div v-if="$slots.titulo || titulo || $slots.descricao || descricao" class="card-polar__centro-bottom">
+          <ChartBase v-if="mostrarGrafico" type="polarArea" :data="chartData" :options="chartOptions"
+            :height="height" />
+          <div v-if="temCentro" class="card-polar__centro-bottom">
             <div v-if="$slots.titulo || titulo" class="card-polar__centro-titulo nc-m-0 nc-text-3xl nc-font-semibold" :style="{ color: palette.text, lineHeight: '33px', letterSpacing: '-1px' }">
               <slot name="titulo">{{ titulo }}</slot>
             </div>
@@ -222,6 +233,17 @@ const chartOptions = computed(() => ({
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* sem gráfico sobra apenas o título/descrição: não reserva a largura do canvas */
+.card-polar--right .card-polar__chart-wrap--sem-grafico,
+.card-polar--left .card-polar__chart-wrap--sem-grafico {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.card-polar__chart-wrap--sem-grafico .card-polar__centro-bottom {
+  margin-top: 0;
 }
 
 .card-polar__chart {

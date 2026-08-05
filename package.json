@@ -1,6 +1,6 @@
 {
   "name": "nemesischart",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "private": false,
   "description": "Lib de componentes Vue 3 para charts usando Chart.js, sem dependências de UI externas",
   "type": "module",

@@ -42,6 +42,7 @@ export default {
     direcao: { control: { type: 'inline-radio' }, options: ['top', 'bottom', 'left', 'right'] },
     tipoValor: { control: { type: 'inline-radio' }, options: ['numero', 'moeda', 'percentual'] },
     corDetalhes: { control: { type: 'color' } },
+    tension: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
     corFundo: { control: { type: 'color' } },
     corTexto: { control: { type: 'color' } },
     corBorda: { control: { type: 'color' } },
@@ -62,6 +63,7 @@ export default {
     descricao: 'acumulado no ano',
     tema: 'light',
     corDetalhes: '#3B82F6',
+    tension: 0.45,
     direcao: 'top',
     tipoValor: 'moeda',
     moeda: 'BRL',
@@ -157,6 +159,15 @@ export const DetalheTooltip = {
     data: pagamentosRealizados,
     detalheTooltip: (item) => `${item.pagamentos.toLocaleString('pt-BR')} pagamentos`,
   },
+}
+
+/**
+ * `tension` — controla a curvatura da linha. `0` gera segmentos retos entre os
+ * pontos; valores maiores (até `1`) suavizam a curva. Padrão: `0.45`.
+ */
+export const LinhaReta = {
+  name: 'Sem curvatura (tension: 0)',
+  args: { tension: 0 },
 }
 
 /** Linha de referência como meta — destaca quem ficou acima/abaixo do alvo. */

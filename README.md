@@ -128,6 +128,7 @@ Props específicas:
 | `corDetalhes` | String | `#3B82F6` | Cor da linha principal. |
 | `corDetalhesSecundaria` | String | — | Segunda cor para gradiente combinado. |
 | `series` | Array | — | Várias linhas. |
+| `tension` | Number | `0.45` | Curvatura da linha (`0` = segmentos retos, `1` = bem arredondada). Valores fora do intervalo são limitados a 0–1. |
 | `direcao` | `top` \| `bottom` \| `left` \| `right` | `top` | Posição do header em relação ao gráfico. |
 | `detalheTooltip` | Function | — | `(item, index) => string \| string[]`. Recebe o item original de `data` e retorna texto(s) extra(s) exibidos no tooltip abaixo do valor. |
 
@@ -207,6 +208,7 @@ Polar area com grid configurável.
 |---|---|---|
 | `corDetalhes` | String | `#3B82F6` (gera a paleta dos setores; itens podem sobrescrever com `cor`) |
 | `mostrarLinhasGrade` | Boolean | `true` |
+| `mostrarGrafico` | Boolean | `true` &nbsp;`false` esconde o gráfico e deixa apenas a tabela (título/descrição continuam visíveis). |
 | `itensClicaveis` | Boolean | `false` |
 | `detalheTooltip` | Function | — &nbsp;`(item, index) => string \| string[]`. Texto(s) extra(s) no tooltip do gráfico, abaixo do valor. |
 | `tooltipLinha` | Function | — &nbsp;`(item, index) => string`. Tooltip nativo (`title`) na linha da tabela lateral. Quando omitido, usa `item.descricao`. |

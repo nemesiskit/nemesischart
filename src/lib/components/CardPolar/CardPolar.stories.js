@@ -37,6 +37,7 @@ export default {
     botaoVisivel: { control: { type: 'boolean' } },
     mostrarCabecalho: { control: { type: 'boolean' } },
     mostrarLinhasGrade: { control: { type: 'boolean' } },
+    mostrarGrafico: { control: { type: 'boolean' } },
     exportar: { control: { type: 'boolean' } },
     nomeArquivoExport: { control: { type: 'text' } },
     itensClicaveis: { control: { type: 'boolean' } },
@@ -44,6 +45,11 @@ export default {
       control: false,
       description:
         'Função `(item, index) => string | string[]`. Recebe o item original de `data` e retorna texto(s) extra(s) exibidos no tooltip abaixo do valor. Use para mostrar um detalhe complementar (ex.: participação %, contagem, meta).',
+    },
+    tooltipLinha: {
+      control: false,
+      description:
+        'Função `(item, index) => string`. Tooltip nativo (atributo `title`) exibido ao passar o mouse sobre a linha da tabela lateral. Quando omitido, usa `item.descricao`.',
     },
     botaoAcao: { action: 'botaoAcao' },
     exportado: { action: 'exportado' },
@@ -61,6 +67,7 @@ export default {
     rotuloQuantidade: 'Quantidade',
     mostrarCabecalho: true,
     mostrarLinhasGrade: true,
+    mostrarGrafico: true,
     botaoVisivel: false,
     textoBotao: 'Ver mais',
     exportar: false,
@@ -150,6 +157,15 @@ export const DetalheTooltip = {
     ],
     detalheTooltip: (item) => `Meta: ${item.meta.toLocaleString('pt-BR')}`,
   },
+}
+
+/**
+ * `mostrarGrafico: false` — esconde o gráfico e deixa só a tabela de dados.
+ * Título e descrição, quando definidos, continuam visíveis ao lado.
+ */
+export const SemGrafico = {
+  name: 'Sem gráfico (só tabela)',
+  args: { mostrarGrafico: false },
 }
 
 /** Itens clicáveis — emite `itemClicado` ao clicar num setor ou linha da tabela. */
